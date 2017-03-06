@@ -1,0 +1,64 @@
+/*
+ * Course fisher
+ *
+ * @package    local
+ * @subpackage coursefisher
+ * @copyright  2014 Roberto Pinna
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
+
+#page-local-coursefisher-addcourse .teachercourses .enroltocourseitem,
+#page-local-coursefisher-addcourse .teachercourses .coursegroup,
+#page-local-coursefisher-addcourse .teachercourses .addcourseitem {
+    border: thin solid black;
+    padding: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#page-local-coursefisher-addcourse .teachercourses li {
+    list-style: outside none none;
+}
+
+#page-local-coursefisher-addcourse .teachercourses .enroltocourselink,
+#page-local-coursefisher-addcourse .teachercourses .addcourselink {
+    padding: 0.4em;
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+    display: inline-block;
+}
+
+#page-local-coursefisher-addcourse .teachercourses .enroltocoursename,
+#page-local-coursefisher-addcourse .teachercourses .addcoursename,
+#page-local-coursefisher-addcourse .teachercourses .enroltocoursecode,
+#page-local-coursefisher-addcourse .teachercourses .addcoursecode {
+    font-weight: bold;
+}
+
+#page-local-coursefisher-addcourse .teachercourses .enroltocoursecategory,
+#page-local-coursefisher-addcourse .teachercourses .addcoursecategory {
+   display: block;
+   font-style: oblique;
+}
+
+#page-local-coursefisher-addcourse .teachercourses .singlecourse,
+#page-local-coursefisher-addcourse .teachercourses .groupcourses,
+#page-local-coursefisher-addcourse .teachercourses .groupcourse,
+#page-local-coursefisher-addcourse .teachercourses #fgroup_id_exitentgrp fieldset span,
+#page-local-coursefisher-addcourse .teachercourses #fgroup_id_actiongrp fieldset span{
+   display: block;
+}
+
+
+#page-local-coursefisher-addcourse .teachercourses .groupcourse {
+   margin-top: 0.4em;
+}
+
+
+#page-local-coursefisher-addcourse .teachercourses .groupcourse.groupfirstcourse {
+   margin-top: 0;
+}
+
+#page-local-coursefisher-addcourse .teachercourses .groupcourse .existentcourse {
+   color: red;
+   margin-left: 1em;
+}
