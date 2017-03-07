@@ -86,6 +86,7 @@ $string['enroltocourse'] = 'Enrol as teacher into course';
 $string['availablecourses'] = 'Addable courses';
 $string['existentcourses'] = 'Existent courses';
 $string['backendfailure'] = 'Can not connect to course backend';
+$string['configerrors'] = 'Found some configuration errors';
 $string['edit'] = 'Edit course settings';
 $string['view'] = 'View course';
 $string['import'] = 'Import data from an other course';
