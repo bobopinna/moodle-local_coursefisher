@@ -19,8 +19,9 @@
  *
  * @package    local
  * @subpackage coursefisherbackend_json
- * @copyright 2014 and above Angelo Calò
- * @copyright 2016 Francesco Carbone
+ * @copyright  2014 and above Angelo Calò
+ * @copyright  2016 Francesco Carbone
+ * @copyright  2017 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,69 +35,86 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
         return(get_string('pluginname', 'coursefisherbackend_json'));
     }
 
+    public function get_data($alldata = false) {
+        global $CFG;
 
-    public function get_data($alldata=false) {
-        global $CFG, $USER, $COURSE;
+        require_once($CFG->libdir . '/filelib.php');
 
-        if ($this->init()) {
-            $parser = new local_coursefisher_parser();
-            $backendfields = array(
-                                 'year'  => date('Y'),
-                                 'month' => date('m'),
-                                 'day'   => date('d')
-                              );  
+        $check = $this->check_settings();
+        if ($check) {
+            $curl = new curl();
+ 
+            $curl->setHeader(array('Accept: application/json', 'Expect:'));
+            $options = array(
+                    'FRESH_CONNECT'     => true,
+                    'RETURNTRANSFER'    => true,
+                    'FORBID_REUSE'      => true,
+                    'HEADER'            => 0,
+                    'CONNECTTIMEOUT'    => 3,
+                    // Follow redirects with the same type of request when sent 301, or 302 redirects.
+                    'CURLOPT_POSTREDIR' => 3
+            ); 
 
-            $parser->add_object("USER", $USER);
-            $parser->add_object("COURSE", $COURSE);
-            $parser->add_object("BACKEND", (object) $backendfields);
+            // Download the first available json file.
+            $result = array();
+            $locators = preg_split("/((\r?\n)|(\r\n?))/", get_config('local_coursefisher', 'locator'));
+            if (!empty($locators)) {
+                $jsondecoded = null;
+                foreach ($locators as $line) {
+                    $url = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $line);
+                    $json = $curl->get($url, array(), $options);
 
-            $override = $parser->parse_field_assign(get_config('local_coursefisher', 'fieldtest'));
-
-            $fields = array('fieldlevel', 'course_code', 'course_fullname', 'course_shortname',
-                            'locator', 'parameters', 'fieldtest');
-
-            if ($parser->check_config(get_config('local_coursefisher', 'filedlist'), $fields, $override) !== false) {
-
-                // Aumento tempo di timeout.
-                $opts = array('http' => array(
-                        'method'  => 'GET',
-                        'header'  => 'Content-Type: application/json; charset=utf-8',
-                        'timeout' => 500
-                      )
-                );
-
-                $context  = stream_context_create($opts);
-
-                // Carico il primo file utile alla lettura dell'offerta formativa.
-                $jsondatas = array();
-                foreach (preg_split("/((\r?\n)|(\r\n?))/", get_config('local_coursefisher', 'locator')) as $line) {
-                    $backend = $parser->substitute_objects($line, false);
-                    $backend = str_replace('\'', '', $backend);
-                    $jsontext = file_get_contents($backend, false, $context);
-                    $jsondecoded = json_decode($jsontext, true);
-                    if ($jsontext && $jsondecoded) {
-                        break;
-                    } else if (!$jsontext) {
-                        print_error('l\'URL'.get_config('local_coursefisher', 'locator').' inserito non è corretto');
+                    if (!empty($json)) {
+                        $jsondecoded = json_decode($json, true);
+                        if (!empty($jsondecoded)) {
+                            break;
+                        }
+                    } else {
+                        debugging('JSON file: '.$line.' not found, skip to next if exists.');
                     }
                 }
 
-                while (list($key, $value) = each($jsondecoded)) {
+                if (!empty($jsondecoded)) {
+                    $fieldlist = trim(get_config('local_coursefisher', 'fieldlist'));
+                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist), -1, PREG_SPLIT_NO_EMPTY));
 
-                    if ($alldata) {
-                        $jsondatas[] = (object)$value;
-                    } else if ($parser->eval_record($parser->substitute_objects(get_config('local_coursefisher', 'parameters'), false),$value)) {
-                        $jsondatas[] = (object)$value;
+                    $parameters = get_config('local_coursefisher', 'parameters');
+                    $filter = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $parameters);
+                    $filters = array_flip(preg_split("/\n|\s/", $filters), -1, PREG_SPLIT_NO_EMPTY));
+                    foreach ($jsondecoded as $element) {
+                        if (!empty($element)) {
+                            $row = new stdClass()
+                            foreach ($element as $key => $value) {
+                               if (in_array($key, $fields)) {
+                                   $row->$key = $value;
+                               }
+                            }
+                            if (($alldata) || $this->is_filtered($filter, $row) {
+                                $result[] = $row;
+                            }
+                        }
                     }
-
                 }
-                 return($jsondatas);
             }
-
+            return $result;
         }
 
         return false;
 
+    }
+
+    private fuction is_fitered($filters, $data) {
+        require_once(__DIR__.'/../../locallib.php');
+  
+        if (!empty($filters) && !empty($data)) {
+            $decodedfilters = local_coursefisher_get_fields_items($filters, array('key' => 2, 'value' => 3));
+            foreach ($decodedfilters as $filter) {
+                if (!isset($data->{$filter->key}) || ($data->{$filter->key} != $filter->value)) {
+                    return false;     
+                }
+            }
+        } 
+        return true;
     }
 
 }
