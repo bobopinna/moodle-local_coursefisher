@@ -43,40 +43,45 @@ class local_coursefisher_backend_database extends local_coursefisher_backend {
     public function get_data($alldata=false) {
         $result = array();
 
-        $parameters = get_config('local_coursefisher', 'parameters');
-        if (!empty($parameters)) {
-            $sql = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::get_user_field', $parameters);
-            if ($alldata) {
-                $sql = preg_replace('/\[\%(\w+)\%\]/', '%', $parameters);
-            }
-            if ($coursesdb = $this->db_init()) {
-                $rs = $coursesdb->Execute($sql);
-                if (!$rs) {
-                    $coursesdb->Close();
-                    debugging(get_string('cantgetdata', 'coursefisherbackend_database'));
-                    debugging($sql);
-                    return false;
-                } else {
-                    if (!$rs->EOF) {
-                        while ($fieldsobj = $rs->FetchRow()) {
-                            $fieldsobj = (object)array_change_key_case((array)$fieldsobj , CASE_LOWER);
-                            $row = new stdClass();
-                            foreach ($fieldsobj as $name => $value) {
-                                if (mb_detect_encoding($value, mb_detect_order(), true) !== 'UTF-8') {
-                                    $value = mb_convert_encoding($value, 'UTF-8');
-                                }
-                                $row->$name = format_string($value);
-                            }
-                            $result[] = $row;
-                        }
-                    }
-                    $rs->Close();
+        if ($this->check_settings()) {
+            $parameters = get_config('local_coursefisher', 'parameters');
+            if (!empty($parameters)) {
+                $sql = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $parameters);
+                if ($alldata) {
+                    $sql = preg_replace('/\[\%(\w+)\%\]/', '%', $parameters);
                 }
-                $coursesdb->Close();
-            } else {
-                debugging(get_string('cantconnect', 'coursefisherbackend_database'));
-                return false;
+                if ($coursesdb = $this->db_init()) {
+                    $rs = $coursesdb->Execute($sql);
+                    if (!$rs) {
+                        $coursesdb->Close();
+                        debugging(get_string('cantgetdata', 'coursefisherbackend_database'));
+                        debugging($sql);
+                        return false;
+                    } else {
+                        if (!$rs->EOF) {
+                            while ($fieldsobj = $rs->FetchRow()) {
+                                $fieldsobj = (object)array_change_key_case((array)$fieldsobj , CASE_LOWER);
+                                $row = new stdClass();
+                                foreach ($fieldsobj as $name => $value) {
+                                    if (mb_detect_encoding($value, mb_detect_order(), true) !== 'UTF-8') {
+                                        $value = mb_convert_encoding($value, 'UTF-8');
+                                    }
+                                    $row->$name = format_string($value);
+                                }
+                                $result[] = $row;
+                            }
+                        }
+                        $rs->Close();
+                    }
+                    $coursesdb->Close();
+                } else {
+                    debugging(get_string('cantconnect', 'coursefisherbackend_database'));
+                    return false;
+                }
             }
+        } else {
+            debugging(get_string('configerrors', 'coursefisherbackend_database'));
+            return false;
         }
 
         return $result;
