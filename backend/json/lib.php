@@ -76,20 +76,20 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
 
                 if (!empty($jsondecoded)) {
                     $fieldlist = trim(get_config('local_coursefisher', 'fieldlist'));
-                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist), -1, PREG_SPLIT_NO_EMPTY));
+                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist), -1, PREG_SPLIT_NO_EMPTY);
 
                     $parameters = get_config('local_coursefisher', 'parameters');
                     $filter = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $parameters);
-                    $filters = array_flip(preg_split("/\n|\s/", $filters), -1, PREG_SPLIT_NO_EMPTY));
+                    $filters = array_flip(preg_split("/\n|\s/", $filters), -1, PREG_SPLIT_NO_EMPTY);
                     foreach ($jsondecoded as $element) {
                         if (!empty($element)) {
-                            $row = new stdClass()
+                            $row = new stdClass();
                             foreach ($element as $key => $value) {
                                if (in_array($key, $fields)) {
                                    $row->$key = $value;
                                }
                             }
-                            if (($alldata) || $this->is_filtered($filter, $row) {
+                            if (($alldata) || $this->is_filtered($filter, $row)) {
                                 $result[] = $row;
                             }
                         }
@@ -103,7 +103,7 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
 
     }
 
-    private fuction is_fitered($filters, $data) {
+    private function is_fitered($filters, $data) {
         require_once(__DIR__.'/../../locallib.php');
   
         if (!empty($filters) && !empty($data)) {
