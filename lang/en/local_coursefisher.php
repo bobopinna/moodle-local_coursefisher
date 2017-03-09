@@ -39,6 +39,8 @@ $string['coursehelplink'] = 'Help Page URL';
 $string['configcoursehelplink'] = 'If defined a link will be shown in Course Fisher section of Administration block';
 $string['actions'] = 'Actions';
 $string['configactions'] = 'Enable what the teacher can choose to do after course creation';
+$string['autocreation'] = 'Automatic course creation';
+$string['configautocreation'] = 'If the choosen backend provide it, this enable cron managed automatic courses creation.';
 
 $string['configurationbackend'] = 'Backend Configuration';
 $string['backend'] = 'Backend';
@@ -63,12 +65,33 @@ $string['fieldtest'] = 'Test values';
 $string['configfieldtest'] = 'Backend configuration test values, one for row. Syntax [field]:value';
 $string['configurationtest'] = 'Test Backend Configuration';
 
+$string['coursesgroup'] = 'Courses group creation';
+$string['grouprule'] = 'Group rule';
+$string['configgrouprule'] = 'This define a comparison rule to match father with child courses. Example: [%father_code%]=[%year%]-[%degree_cod%]-[%course_cod%]';
+$string['forceonlygroups'] = 'Force only group creation';
+$string['configforceonlygroups'] = 'If enabled teachers could create only single courses and defined groups of courses. If a course is member of a group could not be created as standalone course.';
+$string['linktype'] = 'Child courses link';
+$string['configlinktype'] = 'Child courses link must be done using the selected method';
 $string['meta'] = 'Connected with Meta Link enrolment in father course';
-$string['guest'] = 'Connected with Guest enrolment in sons courses';
+$string['guest'] = 'Connected with Guest enrolment in childer courses';
+$string['noguestormeta'] = 'You must enable Guest or Meta Link enrolment plugins to use Course groups';
+$string['linkedcoursecategory'] = 'Child courses category';
+$string['configlinkedcoursecategory'] = 'Set this to create all child courses in a course category. Example: "Child Courses [%department#10%] - [%year%]/[%year+1%]"';
 
-$string['notifysettings'] = 'Email notification Settings';
-$string['notifycoursecreation'] = 'Email course creation based on rule to';
-$string['confignotifycoursecreation'] = 'Send course creation notification messages to these selected users. Notification will be sent upon the previous rule verification.';
+$string['coursesummary'] = 'Course summary';
+$string['configcoursesummary'] = 'This text will set as course summary. Fields get from backend could be used to customize it.';
+$string['sectionzero'] = 'Course general section title';
+$string['configsectionzero'] = 'If defined, new course general section titles will be set. Fields get from backend could be used to customize it.';
+$string['edicationalofferlink'] = 'Course informations link';
+$string['configedicationalofferlink'] = 'An URL resource will be added to the general section in each created course. It could be useful to link to a public course presentation page.';
+$string['coursetemplate'] = 'Template course shortname';
+$string['configcoursetemplate'] = 'The shortname of a course that will be used as a template.';
+
+$string['notifysettings'] = 'Notification Settings';
+$string['notifycoursecreation'] = 'Notify course creation to';
+$string['confignotifycoursecreation'] = 'Send course creation notification messages to these selected users.';
+$string['emailcondition'] = 'Notify if';
+$string['configemailcondition'] = 'A notification will be sent, on course creation, every time this rule will be verified.';
 
 $string['filter'] = 'Visibility';
 $string['coursefisherwill'] = 'Course Fisher will be';

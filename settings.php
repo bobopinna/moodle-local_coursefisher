@@ -34,7 +34,7 @@ if ($hassiteconfig) {
     $page->add(new admin_setting_configtext('local_coursefisher/title',
                 new lang_string('title', 'local_coursefisher'),
                 new lang_string('configtitle', 'local_coursefisher'),
-                'Course Fisher'));
+                new lang_string('pluginname', 'local_coursefisher')));
 
     $page->add(new admin_setting_configtext('local_coursefisher/course_helplink',
                 new lang_string('coursehelplink', 'local_coursefisher'),
@@ -42,14 +42,19 @@ if ($hassiteconfig) {
                 ''));
 
     $choices = array();
-    $choices['view'] = get_string('view', 'local_coursefisher');
-    $choices['edit'] = get_string('edit', 'local_coursefisher');
-    $choices['import'] = get_string('import', 'local_coursefisher');
+    $choices['view'] = new lang_string('view', 'local_coursefisher');
+    $choices['edit'] = new lang_string('edit', 'local_coursefisher');
+    $choices['import'] = new lang_string('import', 'local_coursefisher');
     $defaultchoices = array('view', 'edit', 'import');
     $page->add(new admin_setting_configmultiselect('local_coursefisher/actions',
                 new lang_string('actions', 'local_coursefisher'),
                 new lang_string('configactions', 'local_coursefisher'),
                  $defaultchoices, $choices));
+
+    $page->add(new admin_setting_configcheckbox('local_coursefisher/autocreation',
+                new lang_string('autocreation', 'local_coursefisher'),
+                new lang_string('configautocreation', 'local_coursefisher'),
+                0));
 
     $ADMIN->add('coursefisher', $page);
 
@@ -123,72 +128,80 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('groups', 'Generazione di gruppi di corsi');
-
-    $page->add(new admin_setting_configtext('local_coursefisher/course_group',
-                'Raggruppamento corsi',
-                'Campo_Codice_del_corso_Padre=Combinazione di codici o singolo codice che identifica univocamente il corso (in genere stesso valore che si mette nel campo codice corso)<br>es:[%mut_padre_cod%]=[%aa_offerta%]-[%cds_cod%]-[%pds_cod%]-[%aa_regdid%]-[%af_cod%]-[%partizione_codice%]',
-                ''));
-
-    $page->add(new admin_setting_configcheckbox('local_coursefisher/forceonlygroups',
-                'Creazione solo gruppi di corsi',
-                'Forza la creazione solo dei gruppi di corsi, i docenti non potranno creare corsi figli singolarmente. I corsi singoli potranno essere creati comunque.',
-                0));
+    $page = new admin_settingpage('groups', new lang_string('corsesgroup', 'local_coursefisher'));
 
     $choices = array();
-    $choices['meta'] = get_string('meta', 'local_coursefisher');
-    $choices['guest'] = get_string('guest', 'local_coursefisher');
-    $page->add(new admin_setting_configselect('local_coursefisher/linktype',
-                'Collegamento ai corsi figli',
-                'L\'accesso dai corsi figli al corso padre deve avvenire tramite',
-                'meta', $choices));
+    $default = '';   
+    if (enrol_is_enabled('guest')) {
+        $choices['guest'] = new lang_string('guest', 'local_coursefisher');
+        $default = 'guest';
+    }
+    if (enrol_is_enabled('meta')) {
+        $choices['meta'] = new lang_string('meta', 'local_coursefisher');
+        $default = 'meta';
+    }
+    if (!empty($default)) {
+        $page->add(new admin_setting_configtext('local_coursefisher/course_group',
+                    new lang_string('grouprule', 'local_coursefisher'),
+                    new lang_string('configgrouprule', 'local_coursefisher'),
+                    ''));
 
-    $page->add(new admin_setting_configtext('local_coursefisher/linked_course_category',
-                'Isola corsi figli in una categoria a parte',
-                'es. query o filtri get. Usare [%campo%] per sostituire i campi utente, p.es. [%uidnumber%]',
-                ''));
+        $page->add(new admin_setting_configcheckbox('local_coursefisher/forceonlygroups',
+                    new lang_string('forceonlygroups', 'local_coursefisher'),
+                    new lang_string('configforceonlygroups', 'local_coursefisher'),
+                    0));
+
+        $page->add(new admin_setting_configselect('local_coursefisher/linktype',
+                    new lang_string('linktype', 'local_coursefisher'),
+                    new lang_string('configlinktype', 'local_coursefisher'),
+                    $default, $choices));
+
+        $page->add(new admin_setting_configtext('local_coursefisher/linked_course_category',
+                    new lang_string('linkcoursecategory', 'local_coursefisher'),
+                    new lang_string('configlinkcoursecategory', 'local_coursefisher'),
+                    ''));
+
+    } else {
+        $page->add(new admin_setting_heading('local_coursefisher/noguestormeta', '', new lang_string('noguestormeta', 'local_coursefisher')));
+    }
 
     $ADMIN->add('coursefisher', $page);
 
     $page = new admin_settingpage('templating', 'Impostazioni di base del corso');
 
     $page->add(new admin_setting_configtextarea('local_coursefisher/course_summary',
-                'Introduzione al corso',
-                'Testo da usare come descrizione dei nuovi corsi',
+                new lang_string('coursesummary', 'local_coursefisher'),
+                new lang_string('configcoursesummary', 'local_coursefisher'),
                 ''));
 
     $page->add(new admin_setting_configtext('local_coursefisher/sectionzero_name',
-                'Nome della prima sezione',
-                'Nome della prima sezione',
+                new lang_string('sectionzero', 'local_coursefisher'),
+                new lang_string('configsectionzero', 'local_coursefisher'),
                 ''));
 
     $page->add(new admin_setting_configtext('local_coursefisher/educationaloffer_link',
-                'Formato del link alla scheda dell\'insegnamento',
-                'Formato del link alla scheda dell\'insegnamento. Se vuoto il link non verr&agrave; creato',
+                new lang_string('educationofferlink', 'local_coursefisher'),
+                new lang_string('configeducationofferlink', 'local_coursefisher'),
                 ''));
 
     $page->add(new admin_setting_configtext('local_coursefisher/course_template',
-                'Nome breve template',
-                'Se indicato, il contenuto del corso corrispondente verr&agrave; importato nel nuovo spazio',
+                new lang_string('coursetemplate', 'local_coursefisher'),
+                new lang_string('configcoursetemplate', 'local_coursefisher'),
                 ''));
 
     $ADMIN->add('coursefisher', $page);
 
-    $page->add(new admin_setting_configcheckbox('local_coursefisher/autocreation',
-                'Creazione automatica corsi',
-                'Se il backend lo prevede, è pssibile abilitare la creazione automatica dei corsirecuperati dal backend ad ogni esecuzione del cron ',
-                0));
-
     $page = new admin_settingpage('local_coursefisher_notifications', new lang_string('notifysettings', 'local_coursefisher'));
 
-    $page->add(new admin_setting_configtextarea('local_coursefisher/email_condition',
-                'Condizione per invio mail ad account di supporto',
-                'es. query o filtri get. Usare [%campo%] per sostituire i campi utente, p.es. [%uidnumber%]',
-                ''));
     $page->add(new admin_setting_users_with_capability('local_coursefisher/notifycoursecreation',
                 new lang_string('notifycoursecreation', 'local_coursefisher'),
                 new lang_string('confignotifycoursecreation', 'local_coursefisher'),
                 array(), 'local/coursefisher:addallcourses'));
+
+    $page->add(new admin_setting_configtextarea('local_coursefisher/email_condition',
+                new lang_string('emailcondition', 'local_coursefisher'),
+                new lang_string('configemailcondition', 'local_coursefisher'),
+                ''));
 
     $ADMIN->add('coursefisher', $page);
 
@@ -203,9 +216,9 @@ if ($hassiteconfig) {
                 'shown', $choices));
 
     $fieldnames = array('lastname', 'firstname', 'username', 'email', 'city', 'idnumber', 'institution', 'department', 'address');
-    $fields = array('' => get_string('choose'));
+    $fields = array('' => new lang_string('choose'));
     foreach ($fieldnames as $fieldname) {
-        $fields[$fieldname] = get_string($fieldname);
+        $fields[$fieldname] = new lang_string($fieldname);
     }
 
     $customfields = $DB->get_records('user_info_field');
@@ -222,12 +235,12 @@ if ($hassiteconfig) {
                 '',
                 '', $fields));
 
-    $operators = array('contains' => get_string('contains', 'filters'),
-                       'doesnotcontain' => get_string('doesnotcontain', 'filters'),
-                       'isequalto' => get_string('isequalto', 'filters'),
-                       'isnotequalto' => get_string('isnotequalto', 'filters'),
-                       'startswith' => get_string('startswith', 'filters'),
-                       'endswith' => get_string('endswith', 'filters'));
+    $operators = array('contains' => new lang_string('contains', 'filters'),
+                       'doesnotcontain' => new lang_string('doesnotcontain', 'filters'),
+                       'isequalto' => new lang_string('isequalto', 'filters'),
+                       'isnotequalto' => new lang_string('isnotequalto', 'filters'),
+                       'startswith' => new lang_string('startswith', 'filters'),
+                       'endswith' => new lang_string('endswith', 'filters'));
 
     $page->add(new admin_setting_configselect('local_coursefisher/operator',
                 '',
