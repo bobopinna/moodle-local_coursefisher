@@ -128,7 +128,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('groups', new lang_string('corsesgroup', 'local_coursefisher'));
+    $page = new admin_settingpage('groups', new lang_string('coursesgroup', 'local_coursefisher'));
 
     $choices = array();
     $default = '';   
@@ -180,8 +180,8 @@ if ($hassiteconfig) {
                 ''));
 
     $page->add(new admin_setting_configtext('local_coursefisher/educationaloffer_link',
-                new lang_string('educationofferlink', 'local_coursefisher'),
-                new lang_string('configeducationofferlink', 'local_coursefisher'),
+                new lang_string('educationalofferlink', 'local_coursefisher'),
+                new lang_string('configeducationalofferlink', 'local_coursefisher'),
                 ''));
 
     $page->add(new admin_setting_configtext('local_coursefisher/course_template',

@@ -82,8 +82,8 @@ $string['coursesummary'] = 'Course summary';
 $string['configcoursesummary'] = 'This text will set as course summary. Fields get from backend could be used to customize it.';
 $string['sectionzero'] = 'Course general section title';
 $string['configsectionzero'] = 'If defined, new course general section titles will be set. Fields get from backend could be used to customize it.';
-$string['edicationalofferlink'] = 'Course informations link';
-$string['configedicationalofferlink'] = 'An URL resource will be added to the general section in each created course. It could be useful to link to a public course presentation page.';
+$string['educationalofferlink'] = 'Course informations link';
+$string['configeducationalofferlink'] = 'An URL resource will be added to the general section in each created course. It could be useful to link to a public course presentation page.';
 $string['coursetemplate'] = 'Template course shortname';
 $string['configcoursetemplate'] = 'The shortname of a course that will be used as a template.';
 
