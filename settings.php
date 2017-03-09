@@ -167,7 +167,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('templating', 'Impostazioni di base del corso');
+    $page = new admin_settingpage('templating', new lang_string('coursesettings', 'local_coursefisher'));
 
     $page->add(new admin_setting_configtextarea('local_coursefisher/course_summary',
                 new lang_string('coursesummary', 'local_coursefisher'),
