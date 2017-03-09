@@ -157,8 +157,8 @@ if ($hassiteconfig) {
                     $default, $choices));
 
         $page->add(new admin_setting_configtext('local_coursefisher/linked_course_category',
-                    new lang_string('linkcoursecategory', 'local_coursefisher'),
-                    new lang_string('configlinkcoursecategory', 'local_coursefisher'),
+                    new lang_string('linkedcoursecategory', 'local_coursefisher'),
+                    new lang_string('configlinkedcoursecategory', 'local_coursefisher'),
                     ''));
 
     } else {
@@ -167,7 +167,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('templating', new lang_string('coursesettings', 'local_coursefisher'));
+    $page = new admin_settingpage('templating', new lang_string('coursessettings', 'local_coursefisher'));
 
     $page->add(new admin_setting_configtextarea('local_coursefisher/course_summary',
                 new lang_string('coursesummary', 'local_coursefisher'),
