@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/locallib.php');
 
 function local_coursefisher_extend_settings_navigation(settings_navigation $nav, context $context) {
-    global $PAGE;
+    global $PAGE, $DB, $CFG, $USER;
 
     if (local_coursefisher_enabled_user($context)) {
         $url = new moodle_url('/local/coursefisher/addcourse.php', array());
@@ -46,6 +46,35 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
         if (!empty($helplink)) {
             $url = new moodle_url($helplink, array());
             $coursefisherlinks->add(get_string('help'), $url);
+        }
+    }
+   
+    if ($context->contextlevel == CONTEXT_COURSE) {
+        if ($instances = enrol_get_instances($context->instanceid, true)) {
+            foreach ($instances as $instance) {
+                if ($instance->enrol === 'meta') {
+                    $metacoursecontext = context_course::instance($instance->customint1);
+                    if (is_enrolled($metacoursecontext)) {
+                        $metacourse = $DB->get_record('course', array('id' => $instance->customint1));
+                        $activitytype = $DB->get_field('course_format_options', 'value', array('courseid' => $instance->customint1, 'name' => 'activitytype'));
+                        if (($metacourse->format == 'courselink') || (($metacourse->format == 'singleactivity') && ($activitytype == 'url'))) {
+                            if ($metacourseinstances = enrol_get_instances($metacoursecontext->instanceid, true)) {
+                                foreach ($metacourseinstances as $metacourseinstance) {
+                                    if ($metacourseinstance->enrol === 'self') {
+                                        if ($userenrolment = $DB->get_record('user_enrolments', array('enrolid' => $metacourseinstance->id, 'userid' => $USER->id))) {
+                                            if (($userenrolment->timestart < time()) && (($userenrolment->timeend == 0) || ($userenrolment->timeend < time()))) {
+                                                $node = $nav->get('courseadmin');
+                                                $unenrollink = new moodle_url('/enrol/self/unenrolself.php', array('enrolid' => $metacourseinstance->id));
+                                                $node->add(get_string('unenrolme', 'enrol', $metacourse->shortname), $unenrollink, navigation_node::TYPE_USER, null, null, new pix_icon('i/user', ''));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
