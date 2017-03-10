@@ -131,7 +131,7 @@ if ($hassiteconfig) {
     $page = new admin_settingpage('groups', new lang_string('coursesgroup', 'local_coursefisher'));
 
     $choices = array();
-    $default = '';   
+    $default = '';
     if (enrol_is_enabled('guest')) {
         $choices['guest'] = new lang_string('guest', 'local_coursefisher');
         $default = 'guest';
@@ -162,7 +162,8 @@ if ($hassiteconfig) {
                     ''));
 
     } else {
-        $page->add(new admin_setting_heading('local_coursefisher/noguestormeta', '', new lang_string('noguestormeta', 'local_coursefisher')));
+        $page->add(new admin_setting_heading('local_coursefisher/noguestormeta', '',
+                    new lang_string('noguestormeta', 'local_coursefisher')));
     }
 
     $ADMIN->add('coursefisher', $page);
