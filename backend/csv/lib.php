@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(dirname(__FILE__).'/../lib.php');
+require_once(__DIR__ . '/../lib.php');
 
 class local_coursefisher_backend_csv extends local_coursefisher_backend {
 

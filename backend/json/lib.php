@@ -27,7 +27,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(dirname(__FILE__).'/../lib.php');
+require_once(__DIR__ . '/../lib.php');
 
 class local_coursefisher_backend_json extends local_coursefisher_backend {
 
@@ -43,7 +43,7 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
         $check = $this->check_settings();
         if ($check) {
             $curl = new curl();
- 
+
             $curl->setHeader(array('Accept: application/json', 'Expect:'));
             $options = array(
                     'FRESH_CONNECT'     => true,
@@ -53,7 +53,7 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
                     'CONNECTTIMEOUT'    => 3,
                     // Follow redirects with the same type of request when sent 301, or 302 redirects.
                     'CURLOPT_POSTREDIR' => 3
-            ); 
+            );
 
             // Download the first available json file.
             $result = array();
@@ -61,7 +61,7 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
             if (!empty($locators)) {
                 $jsondecoded = null;
                 foreach ($locators as $line) {
-                    $url = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $line);
+                    $url = $this->format_fields($line);
                     $json = $curl->get($url, array(), $options);
 
                     if (!empty($json)) {
@@ -79,16 +79,18 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
                     $fields = array_flip(preg_split("/\n|\s/", $fieldlist), -1, PREG_SPLIT_NO_EMPTY);
 
                     $parameters = get_config('local_coursefisher', 'parameters');
-                    $filter = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $parameters);
-                    $filters = array_flip(preg_split("/\n|\s/", $filters), -1, PREG_SPLIT_NO_EMPTY);
                     foreach ($jsondecoded as $element) {
                         if (!empty($element)) {
                             $row = new stdClass();
+
                             foreach ($element as $key => $value) {
-                               if (in_array($key, $fields)) {
-                                   $row->$key = $value;
-                               }
+                                if (in_array($key, $fields)) {
+                                    $row->$key = $value;
+                                }
                             }
+
+                            $filter = $this->format_fields($parameters, $row);
+
                             if (($alldata) || $this->is_filtered($filter, $row)) {
                                 $result[] = $row;
                             }
@@ -103,18 +105,18 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
 
     }
 
-    private function is_fitered($filters, $data) {
-        require_once(__DIR__.'/../../locallib.php');
-  
+    private function is_filtered($filter, $data) {
+
         if (!empty($filters) && !empty($data)) {
-            $decodedfilters = local_coursefisher_get_fields_items($filters, array('key' => 2, 'value' => 3));
-            foreach ($decodedfilters as $filter) {
-                if (!isset($data->{$filter->key}) || ($data->{$filter->key} != $filter->value)) {
-                    return false;     
+            $filters = array_flip(preg_split("/\n|\s/", $filter), -1, PREG_SPLIT_NO_EMPTY);
+            $decodedfilters = $this->get_filter_items($filters);
+            foreach ($decodedfilters as $filterrow) {
+                if ($this->is_verified($filterrow)) {
+                    return true;
                 }
             }
-        } 
-        return true;
+        }
+        return false;
     }
 
 }

@@ -249,83 +249,6 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
     return $course;
 }
 
-function local_coursefisher_format_fields($formatstring, $data) {
-
-    $callback = function($matches) use ($data) {
-         return local_coursefisher_get_field($matches, $data);
-    };
-
-    $formattedstring = preg_replace_callback('/\[\%(\w+)(([#+-])(\d+))?\%\]/', $callback, $formatstring);
-
-    return $formattedstring;
-}
-
-function local_coursefisher_get_field($matches, $data) {
-    $replace = null;
-
-    if (isset($matches[1])) {
-        if (isset($data->$matches[1]) && !empty($data->$matches[1])) {
-            if (isset($matches[2])) {
-                switch($matches[3]) {
-                    case '#':
-                        $replace = substr($data->$matches[1], 0, $matches[4]);
-                    break;
-                    case '+':
-                        $replace = $data->$matches[1] + $matches[4];
-                    break;
-                    case '-':
-                        $replace = $data->$matches[1] - $matches[4];
-                    break;
-                }
-            } else {
-                $replace = $data->$matches[1];
-            }
-        }
-    }
-    return $replace;
-}
-
-function local_coursefisher_get_fields_items($field, $items = array('code' => 2, 'description' => 3)) {
-    $result = array();
-    if (!is_array($field)) {
-        $fields = array($field);
-    } else {
-        $fields = $field;
-    }
-
-    foreach ($fields as $element) {
-        preg_match('/^((.+)\=\>)?(.+)?$/', $element, $matches);
-        $item = new stdClass();
-        foreach ($items as $itemname => $itemid) {
-            if (!empty($matches) && !empty($matches[$itemid])) {
-                $item->$itemname = $matches[$itemid];
-            }
-        }
-        if (count((array)$item)) {
-            if (count($items) == 1) {
-                reset($items);
-                $result[] = $item->{key($items)};
-            } else {
-                $result[] = $item;
-            }
-        }
-    }
-
-    if (!is_array($field)) {
-        if (!empty($result)) {
-            return $result[0];
-        } else {
-            return null;
-        }
-    } else {
-        return $result;
-    }
-}
-
-function local_coursefisher_get_fields_description($field) {
-    return local_coursefisher_get_fields_items($field, array('description' => 3));
-}
-
 function local_coursefisher_add_linkedcourse_url($course, $linkedcourse) {
     global $CFG, $DB;
 
@@ -388,14 +311,14 @@ function local_coursefisher_get_coursehashes($courses) {
         $fieldlevelpattern = get_config('local_coursefisher', 'fieldlevel');
         foreach ($courses as $i => $course) {
             $courseidnumber = '';
-            $courseshortname = local_coursefisher_format_fields($courseshortnamepattern, $course);
+            $courseshortname = local_coursefisher_backend::format_fields($courseshortnamepattern, $course);
             if (!empty($coursecodepattern)) {
-                $courseidnumber = local_coursefisher_format_fields($coursecodepattern, $course);
+                $courseidnumber = local_coursefisher_backend::format_fields($coursecodepattern, $course);
             }
             $coursecode = !empty($courseidnumber) ? $courseidnumber : $courseshortname;
 
-            $fieldlist = local_coursefisher_format_fields($fieldlevelpattern, $course);
-            $categories = local_coursefisher_get_fields_description(array_filter(explode("\n", $fieldlist)));
+            $fieldlist = local_coursefisher_backend::format_fields($fieldlevelpattern, $course);
+            $categories = local_coursefisher_backend::get_fields_description(array_filter(explode("\n", $fieldlist)));
             $coursepath = implode(' / ', $categories);
             $coursehash = md5($coursepath.' / '.$coursecode);
             $hashedcourses[$coursehash] = $course;
@@ -426,29 +349,30 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
         $othercoursesmatch = substr($coursegrouppattern, 0, strpos($coursegrouppattern, "="));
 
         /* Search for course group leader and members */
-        $firstcourseid = local_coursefisher_format_fields($firstcoursematch, $selectedcourse);
-        $othercourseid = local_coursefisher_format_fields($othercoursesmatch, $selectedcourse);
+        $firstcourseid = local_coursefisher_backend::format_fields($firstcoursematch, $selectedcourse);
+        $othercourseid = local_coursefisher_backend::format_fields($othercoursesmatch, $selectedcourse);
 
         if (!empty($othercourseid)) {
             /* Search for firstcourse */
             foreach ($courses as $coursehash => $course) {
-                if ($othercourseid == local_coursefisher_format_fields($firstcoursematch, $course)) {
+                if ($othercourseid == local_coursefisher_backend::format_fields($firstcoursematch, $course)) {
                     /* Found firstcourse match */
                     $firstcoursedata = new stdClass();
                     $firstcoursedata->idnumber = '';
-                    $firstcoursedata->shortname = local_coursefisher_format_fields($courseshortnamepattern, $course);
+                    $firstcoursedata->shortname = local_coursefisher_backend::format_fields($courseshortnamepattern, $course);
                     if (!empty($coursecodepattern)) {
-                        $firstcoursedata->idnumber = local_coursefisher_format_fields($coursecodepattern, $course);
+                        $firstcoursedata->idnumber = local_coursefisher_backend::format_fields($coursecodepattern, $course);
                     }
                     $firstcoursedata->code = $firstcoursedata->shortname;
                     if (!empty($firstcoursedata->idnumber)) {
                         $firstcoursedata->code = $firstcoursedata->idnumber;
                     }
 
-                    $categories = array_filter(explode("\n", local_coursefisher_format_fields($fieldlevelpattern, $course)));
-                    $categoriesdescriptions = local_coursefisher_get_fields_description($categories);
+                    $fieldlevel = local_coursefisher_backend::format_fields($fieldlevelpattern, $course);
+                    $categories = array_filter(explode("\n", $fieldlevel));
+                    $categoriesdescriptions = local_coursefisher_backend::get_fields_description($categories);
                     $firstcoursedata->path = implode(' / ', $categoriesdescriptions);
-                    $firstcoursedata->fullname = local_coursefisher_format_fields($coursefullnamepattern, $course);
+                    $firstcoursedata->fullname = local_coursefisher_backend::format_fields($coursefullnamepattern, $course);
                     $firstcoursedata->hash = $coursehash;
                     $firstcoursedata->exists = false;
                     if (!empty($firstcoursedata->idnumber)) {
@@ -462,7 +386,7 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
                     }
 
                     $groupcourses[$coursehash] = $firstcoursedata;
-                    $firstcourseid = local_coursefisher_format_fields($firstcoursematch, $course);
+                    $firstcourseid = local_coursefisher_backend::format_fields($firstcoursematch, $course);
                 }
             }
         } else {
@@ -471,13 +395,13 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
         if ((count($groupcourses) == 1) && !empty($firstcourseid)) {
             /* Search for othercourses */
             foreach ($courses as $coursehash => $course) {
-                if ($firstcourseid == local_coursefisher_format_fields($othercoursesmatch, $course)) {
+                if ($firstcourseid == local_coursefisher_backend::format_fields($othercoursesmatch, $course)) {
                     /* Found firstcourse match */
                     $othercoursedata = new stdClass();
                     $othercoursedata->idnumber = '';
-                    $othercoursedata->shortname = local_coursefisher_format_fields($courseshortnamepattern, $course);
+                    $othercoursedata->shortname = local_coursefisher_backend::format_fields($courseshortnamepattern, $course);
                     if (!empty($coursecodepattern)) {
-                        $othercoursedata->idnumber = local_coursefisher_format_fields($coursecodepattern, $course);
+                        $othercoursedata->idnumber = local_coursefisher_backend::format_fields($coursecodepattern, $course);
                     }
 
                     $othercoursedata->code = $othercoursedata->shortname;
@@ -485,10 +409,11 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
                         $othercoursedata->code = $othercoursedata->idnumber;
                     }
 
-                    $categories = array_filter(explode("\n", local_coursefisher_format_fields($fieldlevelpattern, $course)));
-                    $categoriesdescriptions = local_coursefisher_get_fields_description($categories);
+                    $fieldlevel = local_coursefisher_backend::format_fields($fieldlevelpattern, $course);
+                    $categories = array_filter(explode("\n", $fieldlevel));
+                    $categoriesdescriptions = local_coursefisher_backend::get_fields_description($categories);
                     $othercoursedata->path = implode(' / ', $categoriesdescriptions);
-                    $othercoursedata->fullname = local_coursefisher_format_fields($coursefullnamepattern, $course);
+                    $othercoursedata->fullname = local_coursefisher_backend::format_fields($coursefullnamepattern, $course);
                     $othercoursedata->hash = $coursehash;
                     $othercoursedata->exists = false;
                     if (!empty($othercoursedata->idnumber)) {

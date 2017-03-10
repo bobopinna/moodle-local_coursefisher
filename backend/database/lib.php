@@ -46,9 +46,9 @@ class local_coursefisher_backend_database extends local_coursefisher_backend {
         if ($this->check_settings()) {
             $parameters = get_config('local_coursefisher', 'parameters');
             if (!empty($parameters)) {
-                $sql = preg_replace_callback('/\[\%(\w+)\%\]/', 'parent::user_field_value', $parameters);
+                $sql = $this->format_fields($parameters);
                 if ($alldata) {
-                    $sql = preg_replace('/\[\%(\w+)\%\]/', '%', $parameters);
+                    $sql = preg_replace('/\[\%(.+)\%\]/', '%', $parameters);
                 }
                 if ($coursesdb = $this->db_init()) {
                     $rs = $coursesdb->Execute($sql);

@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+define('BACKENDFIELDMATCHSTRING', '/\[\%(\w+)(([#+-])(\d+))?\%\]/');
+define('USERFIELDMATCHSTRING', '/\[\%\!USER\:(\w+)(([#+-])(\d+))?\!\%\]/');
+
 class local_coursefisher_backend {
 
     public $name;
@@ -54,10 +57,43 @@ class local_coursefisher_backend {
         return null;
     }
 
+    public function check_settings() {
+        $result = true;
+        $fields = array();
+
+        $settings = get_config('local_coursefisher');
+
+        if (!empty($settings->fieldlist)) {
+            $fields = array_flip(preg_split("/\n|\s/", trim($settings->fieldlist), -1, PREG_SPLIT_NO_EMPTY));
+        }
+
+        $checks = (object) array_fill_keys($fields, 'checked');
+
+        if (!empty($settings)) {
+            foreach ($settings as $settingname => $settingvalue) {
+                $checkedsetting = $this->format_fields($settingvalue, $checks);
+                if ($found = preg_match_all(BACKENDFIELDMATCHSTRING, $checkedsetting, $matches)) {
+                    for ($i = 1; $i < $found; $i++) {
+                         debugging('Backend field "'.$matches[1][$i].'" not existent');
+                         $result = false;
+                    }
+                }
+                if ($found = preg_match_all(USERFIELDMATCHSTRING, $checkedsetting, $matches)) {
+                    for ($i = 1; $i < $found; $i++) {
+                         debugging('User field "'.$matches[1][$i].'" not existent');
+                         $result = false;
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
     public function __destruct() {
     }
 
-    public function user_field_value($matches) {
+    static public function user_field_value($matches) {
         global $USER, $DB;
 
         if (isset($matches[1])) {
@@ -83,48 +119,86 @@ class local_coursefisher_backend {
         return null;
     }
 
-    private function get_user_field($fieldname) {
-        return user_field_value(array(1 => $fieldname));
-    }
+    static public function format_fields($formatstring, $data = null) {
 
-    public function check_settings() {
-        $result = true;
-        $fields = array();
+        $formattedstring = preg_replace_callback(USERFIELDMATCHSTRING, 'self::user_field_value', $formatstring);
+        if (!empty($data)) {
+            $tempstring = $formattedstring;
 
-        $settings = get_config('local_coursefisher');
+            $callback = function($matches) use ($data) {
+                 return self::get_field($matches, $data);
+            };
 
-        if (!empty($settings->fieldlist)) {
-            $fields = array_flip(preg_split("/\n|\s/", trim($settings->fieldlist), -1, PREG_SPLIT_NO_EMPTY));
+            $formattedstring = preg_replace_callback(BACKENDFIELDMATCHSTRING, $callback, $tempstring);
         }
 
-        if (!empty($settings)) {
-            foreach ($settings as $settingname => $settingvalue) {
-                if ($found = preg_match_all('/\[\%(\w+)\%\]/', $settingvalue, $matches)) {
-                    if (in_array($settingname, array('locator', 'parameters'))) {
-                        for ($i = 1; $i < $found; $i++) {
-                            if (get_user_field($matches[1][$i]) === null) {
-                               debugging('User field "'.$matches[1][$i].'" not existent');
-                               $result = false;
-                            }
-                        }
-                    } else {
-                        if (!empty($fields)) {
-                            for ($i = 1; $i < $found; $i++) {
-                                if (!in_array($matches[1][$i], $fields)) {
-                                    $notfoundfieldname = $matches[1][$i];
-                                    debugging('Backend field "'.$notfoundfieldname.'" not defined in fieldlist');
-                                    $result = false;
-                                }
-                            }
-                        }
+        return $formattedstring;
+    }
+
+    static public function get_field($matches, $data) {
+        $replace = null;
+
+        if (isset($matches[1])) {
+            if (isset($data->$matches[1]) && !empty($data->$matches[1])) {
+                if (isset($matches[2])) {
+                    switch($matches[3]) {
+                        case '#':
+                            $replace = substr($data->$matches[1], 0, $matches[4]);
+                        break;
+                        case '+':
+                            $replace = $data->$matches[1] + $matches[4];
+                        break;
+                        case '-':
+                            $replace = $data->$matches[1] - $matches[4];
+                        break;
                     }
+                } else {
+                    $replace = $data->$matches[1];
+                }
+            }
+        }
+        return $replace;
+    }
+
+    static public function get_fields_items($field, $items = array('code' => 2, 'description' => 3)) {
+        $result = array();
+        if (!is_array($field)) {
+            $fields = array($field);
+        } else {
+            $fields = $field;
+        }
+
+        foreach ($fields as $element) {
+            preg_match('/^((.+)\=\>)?(.+)?$/', $element, $matches);
+            $item = new stdClass();
+            foreach ($items as $itemname => $itemid) {
+                if (!empty($matches) && !empty($matches[$itemid])) {
+                    $item->$itemname = $matches[$itemid];
+                }
+            }
+            if (count((array)$item)) {
+                if (count($items) == 1) {
+                    reset($items);
+                    $result[] = $item->{key($items)};
+                } else {
+                    $result[] = $item;
                 }
             }
         }
 
-        return $result;
+        if (!is_array($field)) {
+            if (!empty($result)) {
+                return $result[0];
+            } else {
+                return null;
+            }
+        } else {
+            return $result;
+        }
     }
 
-     
-}
+    static public function get_fields_description($field) {
+        return self::get_fields_items($field, array('description' => 3));
+    }
 
+}

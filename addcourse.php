@@ -24,10 +24,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(__FILE__) . '/../../config.php');
-require_once('locallib.php');
-require_once('backend/lib.php');
-require_once('preferences_form.php');
+require(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/locallib.php');
+require_once(__DIR__ . '/backend/lib.php');
+require_once(__DIR__ . '/preferences_form.php');
 
 $courseid = optional_param('courseid', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHANUM);
@@ -71,8 +71,8 @@ $PAGE->set_title($straddcourse);
 $PAGE->set_heading($straddcourse);
 
 $backendname = get_config('local_coursefisher', 'backend');
-if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.php')) {
-    require_once($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.php');
+if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
+    require_once(__DIR__ . '/backend/'.$backendname.'/lib.php');
 
     $backendclassname = 'local_coursefisher_backend_'.$backendname;
 
@@ -100,9 +100,9 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
 
                     $course = null;
                     $courseidnumber = '';
-                    $courseshortname = local_coursefisher_format_fields($courseshortnamepattern, $teachercourse);
+                    $courseshortname = $backend->format_fields($courseshortnamepattern, $teachercourse);
                     if (!empty($coursecodepattern)) {
-                        $courseidnumber = local_coursefisher_format_fields($coursecodepattern, $teachercourse);
+                        $courseidnumber = $backend->format_fields($coursecodepattern, $teachercourse);
                         $course = $DB->get_record('course', array('idnumber' => $courseidnumber));
                     } else {
                         $course = $DB->get_record('course', array('shortname' => $courseshortname));
@@ -118,10 +118,10 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
                     if (! $course) {
                         $coursecode = !empty($courseidnumber) ? $courseidnumber : $courseshortname;
 
-                        $fieldlist = local_coursefisher_format_fields($fieldlevelpattern, $teachercourse);
-                        $categories = local_coursefisher_get_fields_description(array_filter(explode("\n", $fieldlist)));
+                        $fieldlist = $backend->format_fields($fieldlevelpattern, $teachercourse);
+                        $categories = $backend->get_fields_description(array_filter(explode("\n", $fieldlist)));
                         $coursepath = implode(' / ', $categories);
-                        $coursefullname = local_coursefisher_format_fields($coursefullnamepattern, $teachercourse);
+                        $coursefullname = $backend->format_fields($coursefullnamepattern, $teachercourse);
 
                         $addcourseurl = new moodle_url('/local/coursefisher/addcourse.php', array('courseid' => $coursehash));
                         $link = html_writer::tag('a', get_string('addcourse', 'local_coursefisher'),
@@ -233,16 +233,16 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
 
                         $coursedata = new stdClass();
                         $coursedata->idnumber = '';
-                        $coursedata->shortname = local_coursefisher_format_fields($courseshortnamepattern, $hashcourse);
+                        $coursedata->shortname = $backend->format_fields($courseshortnamepattern, $hashcourse);
                         if (isset($coursecodepattern) && !empty($coursecodepattern)) {
-                            $coursedata->idnumber = local_coursefisher_format_fields($coursecodepattern, $hashcourse);
+                            $coursedata->idnumber = $backend->format_fields($coursecodepattern, $hashcourse);
                         }
                         $coursedata->code = !empty($coursedata->idnumber) ? $coursedata->idnumber : $coursedata->shortname;
                         $categories = array_filter(explode("\n",
-                                                   local_coursefisher_format_fields($fieldlevelpattern, $hashcourse)));
-                        $categoriesdescriptions = local_coursefisher_get_fields_description($categories);
+                                                   $backend->format_fields($fieldlevelpattern, $hashcourse)));
+                        $categoriesdescriptions = $backend->get_fields_description($categories);
                         $coursedata->path = implode(' / ', $categoriesdescriptions);
-                        $coursedata->fullname = local_coursefisher_format_fields($coursefullnamepattern, $hashcourse);
+                        $coursedata->fullname = $backend->format_fields($coursefullnamepattern, $hashcourse);
 
                         $userid = $USER->id;
                         if (has_capability('local/coursefisher:addallcourses', $systemcontext)) {
@@ -252,22 +252,22 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
                             /* Create course */
                             $coursedata->summary = '';
                             if (!empty($coursesummarypattern)) {
-                                $coursedata->summary = local_coursefisher_format_fields($coursesummarypattern, $hashcourse);
+                                $coursedata->summary = $backend->format_fields($coursesummarypattern, $hashcourse);
                             }
 
                             $coursedata->sectionzero = '';
                             if (!empty($sectionzeronamepattern)) {
-                                $coursedata->sectionzero = local_coursefisher_format_fields($sectionzeronamepattern, $hashcourse);
+                                $coursedata->sectionzero = $backend->format_fields($sectionzeronamepattern, $hashcourse);
                             }
 
                             $coursedata->educationalofferurl = '';
                             if (!empty($edulinkpattern)) {
-                                $coursedata->educationalofferurl = local_coursefisher_format_fields($edulinkpattern, $hashcourse);
+                                $coursedata->educationalofferurl = $backend->format_fields($edulinkpattern, $hashcourse);
                             }
 
                             $coursedata->templateshortname = '';
                             if (!empty($templatepattern)) {
-                                $coursedata->templateshortname = local_coursefisher_format_fields($templatepattern, $hashcourse);
+                                $coursedata->templateshortname = $backend->format_fields($templatepattern, $hashcourse);
                             }
 
                             $coursedata->notifycreation = false;
@@ -278,7 +278,7 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
                             }
 
                             if ($firstcourse !== null && isset($linkedcategorypattern) && !empty($linkedcategorypattern)) {
-                                $categories[] = local_coursefisher_format_fields($linkedcategorypattern, $hashcourse);
+                                $categories[] = $backend->format_fields($linkedcategorypattern, $hashcourse);
                             }
 
                             if (!empty($coursedata->idnumber)) {
@@ -287,7 +287,7 @@ if (file_exists($CFG->dirroot.'/local/coursefisher/backend/'.$backendname.'/lib.
                                 $oldcourse = $DB->get_record('course', array('shortname' => $coursedata->shortname));
                             }
 
-                            $categoryitems = local_coursefisher_get_fields_items($categories);
+                            $categoryitems = $backend->get_fields_items($categories);
                             if ($newcourse = local_coursefisher_create_course($coursedata, $userid, $categoryitems,
                                                                               $firstcourse, $existent)) {
                                 if ($firstcourse === null) {
