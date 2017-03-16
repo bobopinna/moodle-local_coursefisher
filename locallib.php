@@ -488,12 +488,12 @@ function local_coursefisher_enabled_user($context) {
                     }
                 break;
                 case 'startswith':
-                    if (mb_ereg_match('^'.$matchvalue, $userfieldvalue) !== false) {
+                    if (preg_match('/^'.$matchvalue.'/', $userfieldvalue) === 1) {
                         $enabled = true;
                     }
                 break;
                 case 'endswith':
-                    if (mb_ereg($matchvalue.'$', $userfield) !== false) {
+                    if (preg_match('/'.$matchvalue.'$/', $userfieldvalue) === 1) {
                         $enabled = true;
                     }
                 break;
