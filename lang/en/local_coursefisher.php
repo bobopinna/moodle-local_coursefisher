@@ -101,6 +101,7 @@ $string['ifuserprofilefield'] = 'If user profile field';
 // Plugin interface strings.
 $string['addmoodlecourse'] = 'Add/manage courses';
 $string['addcourse'] = 'Add course';
+$string['notenabled'] = 'Sorry, you are not enabled to add courses';
 $string['nocourseavailable'] = 'Sorry, no available courses';
 $string['coursegroup'] = 'Course group';
 $string['addcoursegroup'] = 'Add course group';
