@@ -46,7 +46,7 @@ class local_coursefisher_backend {
             return false;
         }
 
-        $this->name = new lang_string('backend', 'coursefisher_'.$backendname);
+        $this->name = new lang_string('pluginname', 'coursefisherbackend_'.$backendname);
     }
 
     public function init() {
