@@ -28,6 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../lib.php');
+require_once(__DIR__ . '/../evaluator.class.php');
 
 class local_coursefisher_backend_json extends local_coursefisher_backend {
 
@@ -76,9 +77,10 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
 
                 if (!empty($jsondecoded)) {
                     $fieldlist = trim(get_config('local_coursefisher', 'fieldlist'));
-                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist), -1, PREG_SPLIT_NO_EMPTY);
+                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist, -1, PREG_SPLIT_NO_EMPTY));
 
                     $parameters = get_config('local_coursefisher', 'parameters');
+                    $filter = new local_coursefisher_evaluator($parameters);
                     foreach ($jsondecoded as $element) {
                         if (!empty($element)) {
                             $row = new stdClass();
@@ -89,9 +91,7 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
                                 }
                             }
 
-                            $filter = $this->format_fields($parameters, $row);
-
-                            if (($alldata) || $this->is_filtered($filter, $row)) {
+                            if (($alldata) || (!empty($row) && $filter->evaluate($row))) {
                                 $result[] = $row;
                             }
                         }
@@ -99,22 +99,6 @@ class local_coursefisher_backend_json extends local_coursefisher_backend {
                 }
             }
             return $result;
-        }
-
-        return false;
-
-    }
-
-    private function is_filtered($filter, $data) {
-
-        if (!empty($filters) && !empty($data)) {
-            $filters = array_flip(preg_split("/\n|\s/", $filter), -1, PREG_SPLIT_NO_EMPTY);
-            $decodedfilters = $this->get_filter_items($filters);
-            foreach ($decodedfilters as $filterrow) {
-                if ($this->is_verified($filterrow)) {
-                    return true;
-                }
-            }
         }
         return false;
     }
