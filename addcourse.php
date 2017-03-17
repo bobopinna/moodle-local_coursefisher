@@ -70,6 +70,11 @@ $straddcourse = get_string('addmoodlecourse', 'local_coursefisher');
 $PAGE->set_title($straddcourse);
 $PAGE->set_heading($straddcourse);
 
+if (!local_coursefisher_enabled_user($systemcontext)) {
+     notice(get_string('notenabled', 'local_coursefisher'), new moodle_url('/index.php'));
+     exit;
+}
+
 $backendname = get_config('local_coursefisher', 'backend');
 if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
     require_once(__DIR__ . '/backend/'.$backendname.'/lib.php');
