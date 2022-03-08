@@ -119,7 +119,7 @@ function local_coursefisher_links($nav, $flatnavenabled = false) {
     if (empty($coursefishertitle)) {
         $coursefishertitle = get_string('pluginname', 'local_coursefisher');
     }
-    $addcoursestr = get_string('addmoodlecourse', 'local_coursefisher');
+    $addcoursestr = get_string('addcourses', 'local_coursefisher');
     if (!empty($flatnavenabled)) {
         $addcourses = $nav->add($coursefishertitle.': '.$addcoursestr, $url);
         $addcourses->showinflatnavigation = true;
