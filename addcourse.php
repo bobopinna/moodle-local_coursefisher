@@ -65,14 +65,14 @@ $PAGE->set_pagelayout('incourse');
 $fullname = fullname($user, has_capability('moodle/site:viewfullnames', $systemcontext));
 
 // Print the page header.
-$straddcourse = get_string('addmoodlecourse', 'local_coursefisher');
+$straddcourse = get_string('addcourses', 'local_coursefisher');
 
 $PAGE->set_title($straddcourse);
 $PAGE->set_heading($straddcourse);
 
 if (!local_coursefisher_enabled_user($systemcontext)) {
-     notice(get_string('notenabled', 'local_coursefisher'), new moodle_url('/index.php'));
-     exit;
+    notice(get_string('notenabled', 'local_coursefisher'), new moodle_url('/index.php'));
+    exit;
 }
 
 $backendname = get_config('local_coursefisher', 'backend');
@@ -213,7 +213,13 @@ if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
                     }
                 }
                 if (empty($availablecourses) && empty($existentcourses)) {
-                    notice(get_string('nocourseavailable', 'local_coursefisher'), new moodle_url('/index.php'));
+                    $extra = '';
+                    $helplink = get_config('local_coursefisher', 'course_helplink');
+                    if (!empty($helplink)) {
+                        $url = new moodle_url($helplink, array());
+                        $extra = '<br />' . html_writer::tag('a', get_string('help'), array('href' => $url));
+                    }
+                    notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
                 }
 
                 echo html_writer::end_tag('div');
@@ -337,8 +343,6 @@ if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
                                 redirect(new moodle_url('/backup/'.$action.'.php', array('id' => $firstcourse->id)));
                             break;
                         }
-                    } else {
-                        print_error('Course hash does not match for course access');
                     }
                 } else if (!empty($groupcourses)) {
                     $preferences = new preferences_form(null, array('coursehash' => $coursehash, 'groupcourses' => $groupcourses));
@@ -347,12 +351,16 @@ if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
                     $preferences->display();
                     echo html_writer::end_tag('div');
                     echo $OUTPUT->footer();
-                } else {
-                    print_error('Course hash does not match for preferences page');
                 }
             }
         } else {
-             notice(get_string('nocourseavailable', 'local_coursefisher'), new moodle_url('/index.php'));
+            $extra = '';
+            $helplink = get_config('local_coursefisher', 'course_helplink');
+            if (!empty($helplink)) {
+                $url = new moodle_url($helplink, array());
+                $extra = '<br />' . html_writer::tag('a', get_string('help'), array('href' => $url));
+            }
+            notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
         }
     }
 }
