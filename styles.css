@@ -62,3 +62,24 @@
    color: red;
    margin-left: 1em;
 }
+
+#page-blocks-course_fisher-addcourse .teachercourses .addcoursegrouplink + ul,
+#page-blocks-course_fisher-addcourse .teachercourses .coursegrouptitle + ul {
+   border: thin solid black;
+   padding: 0.5em 0.5em 0 25px;
+   margin-left: 0;
+   margin-top: 0.2em;
+}
+
+#page-blocks-course_fisher-addcourse .teachercourses .addcoursegrouplink,
+#page-blocks-course_fisher-addcourse .teachercourses .coursegrouptitle {
+    border: thin solid black;
+    border-bottom: none;
+    padding: 0.4em;
+    margin-bottom: 0.5em;
+    margin-right: 1em;
+}
+
+.page-mycourses #page-header .header-action {
+   float: right;
+}

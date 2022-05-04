@@ -15,10 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course fisher
+ * Course fisher lib
  *
- * @package    local
- * @subpackage coursefisher
+ * @package    local_coursefisher
  * @copyright  2014 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,41 +29,31 @@ require_once(__DIR__ . '/locallib.php');
 /**
  * Extend Navigation block
  *
- * @param object $navigation global_navigation
+ * @param global_navigation $navigation Navigation
  * @return void
  */
 function local_coursefisher_extend_navigation(global_navigation $navigation) {
-    global $PAGE;
+    global $PAGE, $OUTPUT;
 
-    if (local_coursefisher_enabled_user($PAGE->context)) {
-        local_coursefisher_links($PAGE->navigation, true);
+    $coursefishernav = local_coursefisher_navigation($PAGE->navigation, $PAGE->context);
+
+    if ($PAGE->pagelayout == 'mycourses') {
+        $coursefisherlinks = local_coursefisher_links($PAGE->context);
+        if (!empty($coursefisherlinks)) {
+            $PAGE->add_header_action($OUTPUT->render_from_template('local_coursefisher/buttons', $coursefisherlinks));
+        }
     }
 }
 
 /**
- * Extend Settings block
+ * Extend Settings/Administration block with unenrol link to meta linked courses
  *
- * @param object $nav settings_navigation
- * @param object $context context
+ * @param settings_navigation $nav Setting navigation
+ * @param context $context Navigation context
  * @return void
  */
 function local_coursefisher_extend_settings_navigation(settings_navigation $nav, context $context) {
-    global $PAGE, $DB, $CFG, $USER;
-
-    if (local_coursefisher_enabled_user($context)) {
-        $coursefishertitle = get_config('local_coursefisher', 'title');
-        if (empty($coursefishertitle)) {
-            $coursefishertitle = get_string('pluginname', 'local_coursefisher');
-        }
-        $coursefisherlinks = $nav->add($coursefishertitle, null, navigation_node::TYPE_CONTAINER);
-        local_coursefisher_links($coursefisherlinks);
-
-        $helplink = get_config('local_coursefisher', 'course_helplink');
-        if (!empty($helplink)) {
-            $url = new moodle_url($helplink, array());
-            $coursefisherlinks->add(get_string('help'), $url);
-        }
-    }
+    global $DB, $USER;
 
     if ($context->contextlevel == CONTEXT_COURSE) {
         if ($instances = enrol_get_instances($context->instanceid, true)) {
@@ -106,92 +95,56 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
 }
 
 /**
- * Add coursefisher links
+ * Add coursefisher navigation links
  *
  * @param object $nav navigation_node
- * @param boolean $flatnavenabled
+ * @param context $context Navigation context
  * @return void
  */
-function local_coursefisher_links($nav, $flatnavenabled = false) {
+function local_coursefisher_navigation($nav, $context) {
+    if (local_coursefisher_enabled_user($context)) {
+        $coursefishertitle = get_config('local_coursefisher', 'title');
+        if (empty($coursefishertitle)) {
+            $coursefishertitle = get_string('pluginname', 'local_coursefisher');
+        }
+        $coursefishernav = $nav->add($coursefishertitle, null, navigation_node::TYPE_CONTAINER);
 
-    $url = new moodle_url('/local/coursefisher/addcourse.php', array());
-    $coursefishertitle = get_config('local_coursefisher', 'title');
-    if (empty($coursefishertitle)) {
-        $coursefishertitle = get_string('pluginname', 'local_coursefisher');
-    }
-    $addcoursestr = get_string('addcourses', 'local_coursefisher');
-    if (!empty($flatnavenabled)) {
-        $addcourses = $nav->add($coursefishertitle.': '.$addcoursestr, $url);
-        $addcourses->showinflatnavigation = true;
-    } else {
-        $addcourses = $nav->add($addcoursestr, $url);
+        $url = new moodle_url('/local/coursefisher/addcourse.php', array());
+        $coursefishertitle = get_config('local_coursefisher', 'title');
+        if (empty($coursefishertitle)) {
+            $coursefishertitle = get_string('pluginname', 'local_coursefisher');
+        }
+        $addcoursestr = get_string('addcourses', 'local_coursefisher');
+        $node = $coursefishernav->add($addcoursestr, $url, navigation_node::TYPE_SETTING, null, 'coursefisher');
+
+        $helplink = get_config('local_coursefisher', 'course_helplink');
+        if (!empty($helplink)) {
+            $url = new moodle_url($helplink, array());
+            $coursefishernav->add(get_string('help', 'local_coursefisher'), $url);
+        }
     }
 }
 
 /**
- * Execute automatic operations
+ * Get coursefisher links
  *
- * @return boolean
+ * @param context $context Navigation context
+ * @return array
  */
-function local_coursefisher_cron() {
-    global $CFG, $DB;
+function local_coursefisher_links($context) {
+    $coursefisherlinks = array();
 
-    require_once(__DIR__ . '/backend/lib.php');
-
-    $backendname = get_config('local_coursefisher', 'backend');
-    if (file_exists(__DIR__ . '/backend/'.$backend.'/lib.php')) {
-        require_once(__DIR__ . '/backend/'.$backend.'/lib.php');
-        $backendclassname = 'local_coursefisher_backend_'.$backend;
-        if (class_exists($backendclassname)) {
-            $backend = new $backendclassname();
-            if (method_exists($backend, 'cron')) {
-                mtrace('Processing backend '.$backend.' cron...');
-                $backend->cron();
-                mtrace('done.');
-            }
-
-            $autocreation = get_config('local_coursefisher', 'autocreation');
-            if (!empty($autocreation)) {
-                mtrace('Processing course autocreation...');
-                $teachercourses = local_coursefisher_get_coursehashes($backend->get_data(true));
-
-                if (!empty($teachercourses)) {
-                    $coursecodepattern = get_config('local_coursefisher', 'course_code');
-                    $courseshortnamepattern = get_config('local_coursefisher', 'course_shortname');
-                    $coursefullnamepattern = get_config('local_coursefisher', 'course_fullname');
-                    $fieldlevelpattern = get_config('local_coursefisher', 'fieldlevel');
-                    foreach ($teachercourses as $coursehash => $teachercourse) {
-                        $course = null;
-                        $coursecode = '';
-                        $courseshortname = '';
-                        if (!empty($coursecodeipattern)) {
-                            $coursecode = $backend->format_fields($coursecodepattern, $teachercourse);
-                            $course = $DB->get_record('course', array('idnumber' => $coursecode));
-                        } else {
-                            $courseshortname = $backend->format_fields($courseshortnamepattern, $teachercourse);
-                            $course = $DB->get_record('course', array('shortname' => $courseshortname));
-                        }
-                        if (! $course) {
-                            $courseshortname = $backend->format_fields($courseshortnamepattern, $teachercourse);
-                            $categories = array_filter(explode("\n", $backend->format_fields($fieldlevelpattern, $teachercourse)));
-                            $categoriesdescriptions = $backend->get_fields_description($categories);
-                            $coursepath = implode(' / ', $categoriesdescriptions);
-                            $coursefullname = $backend->format_fields($coursefullnamepattern, $teachercourse);
-
-                            $coursecode = $backend->format_fields($coursecodepattern, $teachercourse);
-                            if (! $newcourse = local_coursefisher_create_course($coursefullname, $courseshortname,
-                                    $coursecode, 0, $backend->get_fields_items($categories))) {
-                                 notice(get_string('coursecreationerror', 'local_coursefisher'));
-                            } else {
-                                 mtrace('... added course'.$coursefullname.' - '.$courseshortname.' - '.$coursecode);
-                            }
-                        }
-                    }
-                }
-            }
+    if (local_coursefisher_enabled_user($context)) {
+        $coursefishertitle = get_config('local_coursefisher', 'title');
+        if (empty($coursefishertitle)) {
+            $coursefishertitle = get_string('pluginname', 'local_coursefisher');
+        }
+        $coursefisherlinks['coursefishertitle'] = $coursefishertitle;
+        $coursefisherlinks['addcourseurl'] = new moodle_url('/local/coursefisher/addcourse.php', array());
+        $helplink = get_config('local_coursefisher', 'course_helplink');
+        if (!empty($helplink)) {
+            $coursefisherlinks['helpurl'] = new moodle_url($helplink, array());
         }
     }
-
-    return true;
+    return $coursefisherlinks;
 }
-

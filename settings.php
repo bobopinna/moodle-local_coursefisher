@@ -58,7 +58,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('backend_config', new lang_string('configurationbackend', 'local_coursefisher'));
+    $page = new admin_settingpage('local_coursefisher_backend', new lang_string('backendsettings', 'local_coursefisher'));
 
     $choices = array();
     foreach (core_plugin_manager::instance()->get_plugins_of_type('coursefisherbackend') as $backend) {
@@ -97,6 +97,15 @@ if ($hassiteconfig) {
     $page->add(new admin_setting_heading('local_coursefisher/configurablefields', '',
                 new lang_string('configcoursefields', 'local_coursefisher')));
 
+    $backendtestlink = html_writer::tag('a', new lang_string('configurationtest', 'local_coursefisher'),
+                array('href' => new moodle_url('/local/coursefisher/backend/test.php')));
+
+    $page->add(new admin_setting_heading('local_coursefisher/backendtestlink', '', $backendtestlink));
+
+    $ADMIN->add('coursefisher', $page);
+
+    $page = new admin_settingpage('local_coursefisher_course', new lang_string('coursesettings', 'local_coursefisher'));
+
     $page->add(new admin_setting_configtextarea('local_coursefisher/fieldlevel',
                 new lang_string('fieldlevel', 'local_coursefisher'),
                 new lang_string('configfieldlevel', 'local_coursefisher'),
@@ -122,13 +131,25 @@ if ($hassiteconfig) {
                 new lang_string('configfieldtest', 'local_coursefisher'),
                 ''));
 
-    $backendtestlink = html_writer::tag('a', new lang_string('configurationtest', 'local_coursefisher'),
-                array('href' => new moodle_url('/local/coursefisher/backend/test.php')));
-    $page->add(new admin_setting_heading('local_coursefisher/backendtestlink', '', $backendtestlink));
+    $choices = array(
+        'none' => get_string('dontsortcourses'),
+        'fullname' => get_string('sortbyx', 'moodle', get_string('fullnamecourse')),
+        'fullnamedesc' => get_string('sortbyxreverse', 'moodle', get_string('fullnamecourse')),
+        'shortname' => get_string('sortbyx', 'moodle', get_string('shortnamecourse')),
+        'shortnamedesc' => get_string('sortbyxreverse', 'moodle', get_string('shortnamecourse')),
+        'idnumber' => get_string('sortbyx', 'moodle', get_string('idnumbercourse')),
+        'idnumberdesc' => get_string('sortbyxreverse', 'moodle', get_string('idnumbercourse')),
+        'timecreated' => get_string('sortbyx', 'moodle', get_string('timecreatedcourse')),
+        'timecreateddesc' => get_string('sortbyxreverse', 'moodle', get_string('timecreatedcourse'))
+    );
+    $page->add(new admin_setting_configselect('local_coursefisher/sortcoursesby',
+                new lang_string('sortcoursesby', 'local_coursefisher'),
+                new lang_string('configsortcoursesby', 'local_coursefisher'),
+                'none', $choices));
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('groups', new lang_string('coursesgroup', 'local_coursefisher'));
+    $page = new admin_settingpage('local_coursefisher_coursesgroup', new lang_string('coursesgroupsettings', 'local_coursefisher'));
 
     $choices = array();
     $default = '';
@@ -168,7 +189,8 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('templating', new lang_string('coursessettings', 'local_coursefisher'));
+    $page = new admin_settingpage('local_coursefisher_coursecontent',
+                new lang_string('coursecontentsettings', 'local_coursefisher'));
 
     $page->add(new admin_setting_configtextarea('local_coursefisher/course_summary',
                 new lang_string('coursesummary', 'local_coursefisher'),
@@ -206,7 +228,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('coursefisher', $page);
 
-    $page = new admin_settingpage('filter_config', new lang_string('filter', 'local_coursefisher'));
+    $page = new admin_settingpage('local_coursefisher_userfilter', new lang_string('filter', 'local_coursefisher'));
 
     $choices = array();
     $choices['shown'] = new lang_string('shown', 'local_coursefisher');
