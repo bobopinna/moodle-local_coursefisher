@@ -17,8 +17,7 @@
 /**
  * Course fisher
  *
- * @package    local
- * @subpackage coursefisher
+ * @package    local_coursefisher
  * @copyright 2014 and above Roberto Pinna, Diego Fantoma, Angelo Calò
  * @copyright 2016 and above Francesco Carbone
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,18 +25,18 @@
 
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/locallib.php');
-require_once(__DIR__ . '/backend/lib.php');
 require_once(__DIR__ . '/preferences_form.php');
+
+set_time_limit(300);
 
 $courseid = optional_param('courseid', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHANUM);
 $existent = optional_param('existent', '', PARAM_ALPHANUM);
 
-
-$actions = get_config('local_coursefisher', 'actions');
-if (isset($actions) && !empty($actions) && !in_array($action, explode(',', $actions))) {
+$config = get_config('local_coursefisher');
+if (isset($config->actions) && !empty($config->actions) && !in_array($action, explode(',', $config->actions))) {
     $action = '';
-} else if ((!isset($actions) || empty($actions)) && ($action != 'view')) {
+} else if ((!isset($config->actions) || empty($config->actions)) && ($action != 'view')) {
     $action = '';
 }
 
@@ -75,292 +74,306 @@ if (!local_coursefisher_enabled_user($systemcontext)) {
     exit;
 }
 
-$backendname = get_config('local_coursefisher', 'backend');
-if (file_exists(__DIR__ . '/backend/'.$backendname.'/lib.php')) {
-    require_once(__DIR__ . '/backend/'.$backendname.'/lib.php');
+$backendclassname = '';
+if (isset($config->backend) && !empty($config->backend)) {
+    $backendclassname = '\coursefisherbackend_' . $config->backend . '\backend';
+}
 
-    $backendclassname = 'local_coursefisher_backend_'.$backendname;
+if (!empty($backendclassname) && class_exists($backendclassname)) {
 
-    if (class_exists($backendclassname)) {
+    $backend = new $backendclassname();
 
-        $backend = new $backendclassname();
+    $cancreateallcourses = has_capability('local/coursefisher:addallcourses', $systemcontext);
+    $teachercourses = local_coursefisher_get_coursehashes($backend->get_data($cancreateallcourses));
 
-        $cancreateallcourses = has_capability('local/coursefisher:addallcourses', $systemcontext);
-        $teachercourses = local_coursefisher_get_coursehashes($backend->get_data($cancreateallcourses));
-
-        if (!empty($teachercourses)) {
-            $courseshortnamepattern = get_config('local_coursefisher', 'course_shortname');
-            $coursefullnamepattern = get_config('local_coursefisher', 'course_fullname');
-            $coursecodepattern = get_config('local_coursefisher', 'course_code');
-            $fieldlevelpattern = get_config('local_coursefisher', 'fieldlevel');
-
+    if (!empty($teachercourses)) {
+        if (class_exists('core_course_category')) {
+            $categorieslist = core_course_category::make_categories_list();
+        } else {
+            require_once($CFG->libdir. '/coursecatlib.php');
             $categorieslist = coursecat::make_categories_list();
-            if (empty($courseid)) {
-                echo $OUTPUT->header();
-                echo html_writer::start_tag('div', array('class' => 'teachercourses'));
+        }
+        if (empty($courseid)) {
+            echo $OUTPUT->header();
+            echo html_writer::start_tag('div', array('class' => 'teachercourses'));
 
-                $availablecourses = array();
-                $existentcourses = '';
-                foreach ($teachercourses as $coursehash => $teachercourse) {
+            $availablecourses = array();
+            $existentcourses = array();
+            foreach ($teachercourses as $coursehash => $teachercourse) {
 
-                    $course = null;
-                    $courseidnumber = '';
-                    $courseshortname = $backend->format_fields($courseshortnamepattern, $teachercourse);
-                    if (!empty($coursecodepattern)) {
-                        $courseidnumber = $backend->format_fields($coursecodepattern, $teachercourse);
-                        $course = $DB->get_record('course', array('idnumber' => $courseidnumber));
-                    } else {
-                        $course = $DB->get_record('course', array('shortname' => $courseshortname));
-                    }
+                $course = null;
+                $courseidnumber = '';
+                $courseshortname = $backend->format_fields($config->course_shortname, $teachercourse);
+                if (!empty($config->course_code)) {
+                    $courseidnumber = $backend->format_fields($config->course_code, $teachercourse);
+                    $course = $DB->get_record('course', array('idnumber' => $courseidnumber));
+                } else {
+                    $course = $DB->get_record('course', array('shortname' => $courseshortname));
+                }
 
-                    $coursegroup = '';
-                    $groupcourses = local_coursefisher_get_groupcourses($teachercourses, $coursehash, $teachercourse);
-                    if (count($groupcourses) > 1) {
-                        reset($groupcourses);
-                        $coursegroup = key($groupcourses);
-                    }
+                $coursegroup = 0;
+                $groupcourses = local_coursefisher_get_groupcourses($teachercourses, $coursehash, $teachercourse);
+                if (count($groupcourses) > 1) {
+                    reset($groupcourses);
+                    $coursegroup = key($groupcourses);
+                }
 
-                    if (! $course) {
-                        $coursecode = !empty($courseidnumber) ? $courseidnumber : $courseshortname;
+                if (! $course) {
+                    $coursecode = !empty($courseidnumber) ? $courseidnumber : $courseshortname;
 
-                        $fieldlist = $backend->format_fields($fieldlevelpattern, $teachercourse);
-                        $categories = $backend->get_fields_description(array_filter(explode("\n", $fieldlist)));
-                        $coursepath = implode(' / ', $categories);
-                        $coursefullname = $backend->format_fields($coursefullnamepattern, $teachercourse);
+                    $fieldlist = $backend->format_fields($config->fieldlevel, $teachercourse);
+                    $categories = $backend->get_fields_description(array_filter(explode("\n", $fieldlist)));
+                    $coursepath = implode(' / ', $categories);
+                    $coursefullname = $backend->format_fields($config->course_fullname, $teachercourse);
 
-                        $addcourseurl = new moodle_url('/local/coursefisher/addcourse.php', array('courseid' => $coursehash));
+                    $addcourseurl = new moodle_url('/local/coursefisher/addcourse.php', array('courseid' => $coursehash));
+                    $link = '';
+                    if (empty($config->forceonlygroups) || count($groupcourses) == 1) {
                         $link = html_writer::tag('a', get_string('addcourse', 'local_coursefisher'),
-                                                 array('href' => $addcourseurl, 'class' => 'addcourselink'));
-                        $coursecategories = html_writer::tag('span', $coursepath, array('class' => 'addcoursecategory'));
-                        $coursename = html_writer::tag('span', $coursefullname, array('class' => 'addcoursename'));
+                                                 array('href' => $addcourseurl, 'class' => 'addcourselink btn btn-primary'));
+                    }
+                    $coursecategories = html_writer::tag('span', $coursepath, array('class' => 'addcoursecategory'));
+                    $coursename = html_writer::tag('span', $coursefullname, array('class' => 'addcoursename'));
+                    $courselinkandtext = $link.$coursename.$coursecategories;
+                    $coursecodes = '';
+                    if (has_capability('local/coursefisher:addallcourses', $systemcontext)) {
+                        $coursecodes = html_writer::tag('span', $coursecode.', '.$courseshortname,
+                                                        array('class' => 'addcoursecode'));
+                    }
+                    $coursehtml = html_writer::tag('li', $courselinkandtext.$coursecodes, array('class' => 'addcourseitem'));
+
+                    $isfirst = isset($groupcourses[$coursehash]->first) && !empty($groupcourses[$coursehash]->first);
+                    if ($isfirst && isset($availablecourses[$coursegroup])) {
+                        $availablecourses[$coursegroup] = array_merge(array($coursehash => $coursehtml),
+                                                                      $availablecourses[$coursegroup]);
+                    } else {
+                        if (!isset($availablecourses[$coursegroup])) {
+                            $availablecourses[$coursegroup] = array();
+                        }
+                        $availablecourses[$coursegroup][$coursehash] = $coursehtml;
+                    }
+                } else {
+                    $coursecode = $course->shortname;
+                    if (isset($course->idnumber) && !empty($course->idnumber)) {
+                        $coursecode = $course->idnumber;
+                    }
+
+                    $alreadyteacher = is_enrolled(context_course::instance($course->id), $user, 'moodle/course:update', true);
+                    $canaddall = has_capability('local/coursefisher:addallcourses', $systemcontext);
+                    $isfirst = isset($groupcourses[$coursehash]->first) && !empty($groupcourses[$coursehash]->first);
+                    $link = '';
+                    if (!$alreadyteacher && !$canaddall && (empty($config->forceonlygroups) || $isfirst)) {
+                        $courseurl = new moodle_url('/local/coursefisher/addcourse.php',
+                                                    array('courseid' => $coursehash, 'action' => 'view'));
+                        $link = html_writer::tag('a', get_string('enroltocourse', 'local_coursefisher'),
+                                                 array('href' => $courseurl, 'class' => 'enroltocourselink'));
+                        $coursecategories = html_writer::tag('span', $categorieslist[$course->category],
+                                                             array('class' => 'enroltocoursecategory'));
+                        $coursename = html_writer::tag('span', $course->fullname, array('class' => 'enroltocoursename'));
                         $courselinkandtext = $link.$coursename.$coursecategories;
-                        if (has_capability('local/coursefisher:addallcourses', $systemcontext)) {
-                            $coursecodes = html_writer::tag('span', $coursecode.$courseshortname,
-                                                            array('class' => 'addcoursecode'));
-                            $availablecourses[$coursegroup][$coursehash] = html_writer::tag('li', $courselinkandtext.$coursecodes,
-                                                                                            array('class' => 'addcourseitem'));
+
+                        if (!isset($existentcourses[$coursegroup])) {
+                            $existentcourses[$coursegroup] = array();
+                        }
+                        $existentcourses[$coursegroup][$coursehash] = html_writer::tag('li', $courselinkandtext,
+                                                                                       array('class' => 'enroltocourseitem'));
+                    }
+                }
+            }
+            if (!empty($availablecourses)) {
+                echo html_writer::tag('h1', get_string('availablecourses', 'local_coursefisher'), array());
+                foreach ($availablecourses as $coursegroup => $availablegroupelements) {
+                    echo html_writer::start_tag('ul', array('class' => 'availablecourses'));
+                    if (count($availablegroupelements) > 1) {
+                        if (!empty($coursegroup)) {
+                            echo html_writer::start_tag('li', array('class' => 'availablecourses coursegroup'));
+                            if (empty($config->forceonlygroups)) {
+                                echo html_writer::tag('span', get_string('coursegroup', 'local_coursefisher'),
+                                                      array('class' => 'coursegrouptitle'));
+                            } else {
+                                $grouphash = implode('', array_keys($availablegroupelements));
+                                $groupurl = new moodle_url('/blocks/course_fisher/addcourse.php', array('courseid' => $grouphash));
+                                echo html_writer::tag('a', get_string('addcoursegroup', 'block_course_fisher'),
+                                                      array('href' => $groupurl, 'class' => 'addcoursegrouplink'));
+                            }
+                            echo html_writer::start_tag('ul', array('class' => 'availablecourses'));
+                            echo implode("\n", $availablegroupelements);
+                            echo html_writer::end_tag('ul');
+                            echo html_writer::end_tag('li');
                         } else {
-                            $availablecourses[$coursegroup][$coursehash] = html_writer::tag('li', $courselinkandtext,
-                                                                                            array('class' => 'addcourseitem'));
+                            echo implode("\n", $availablegroupelements);
                         }
                     } else {
-                        $coursecode = $course->shortname;
-                        if (isset($course->idnumber) && !empty($course->idnumber)) {
-                            $coursecode = $course->idnumber;
-                        }
-
-                        $link = '';
-
-                        $isalreadyteacher = is_enrolled(context_course::instance($course->id), $user, 'moodle/course:update', true);
-                        $canaddall = has_capability('local/coursefisher:addallcourses', $systemcontext);
-                        if (!$isalreadyteacher && !$canaddall) {
-                            $courseurl = new moodle_url('/local/coursefisher/addcourse.php',
-                                                        array('courseid' => $coursehash, 'action' => 'view'));
-                            $link = html_writer::tag('a', get_string('enroltocourse', 'local_coursefisher'),
-                                                     array('href' => $courseurl, 'class' => 'enroltocourselink'));
-                            $coursecategories = html_writer::tag('span', $categorieslist[$course->category],
-                                                                 array('class' => 'enroltocoursecategory'));
-                            $coursename = html_writer::tag('span', $course->fullname, array('class' => 'enroltocoursename'));
-                            $courselinkandtext = $link.$coursename.$coursecategories;
-                            $existentcourses[$coursegroup][$coursehash] = html_writer::tag('li', $courseilinkandtext,
-                                                                                           array('class' => 'enroltocourseitem'));
-                        }
+                        echo current($availablegroupelements);
                     }
+                    echo html_writer::end_tag('ul');
                 }
-                if (!empty($availablecourses)) {
-                    echo html_writer::tag('h1', get_string('availablecourses', 'local_coursefisher'), array());
-                    foreach ($availablecourses as $coursegroup => $availablegroupelements) {
-                        echo html_writer::start_tag('ul', array('class' => 'availablecourses'));
-                        if (count($availablegroupelements) > 1) {
-                            if (!empty($coursegroup)) {
-                                echo html_writer::start_tag('li', array('class' => 'availablecourses coursegroup'));
-                                echo html_writer::tag('span', get_string('coursegroup', 'local_coursefisher'),
-                                                      array('class' => 'coursegrouptitle'));
-                                echo html_writer::start_tag('ul', array('class' => 'availablecourses'));
-                                echo implode("\n", $availablegroupelements);
-                                echo html_writer::end_tag('ul');
-                                echo html_writer::end_tag('li');
-                            } else {
-                                echo implode("\n", $availablegroupelements);
-                            }
+            }
+            if (!empty($existentcourses)) {
+                echo html_writer::tag('h1', get_string('existentcourses', 'local_coursefisher'), array());
+
+                foreach ($existentcourses as $coursegroup => $existentgroupelements) {
+                    echo html_writer::start_tag('ul', array('class' => 'existentcourses'));
+                    if (count($existentgroupelements) > 1) {
+                        if (!empty($coursegroup)) {
+                            echo html_writer::start_tag('li', array('class' => 'existentcourses coursegroup'));
+                            echo html_writer::tag('span', get_string('coursegroup', 'local_coursefisher'),
+                                                  array('class' => 'coursegrouptitle'));
+                            echo html_writer::start_tag('ul', array('class' => 'existentcourses'));
+                            echo implode("\n", $existentgroupelements);
+                            echo html_writer::end_tag('ul');
+                            echo html_writer::end_tag('li');
                         } else {
-                            echo current($availablegroupelements);
+                            echo implode("\n", $existentgroupelements);
                         }
-                        echo html_writer::end_tag('ul');
+                    } else {
+                        echo current($existentgroupelements);
                     }
+                    echo html_writer::end_tag('ul');
                 }
-                if (!empty($existentcourses)) {
-                    echo html_writer::tag('h1', get_string('existentcourses', 'local_coursefisher'), array());
+            }
+            if (empty($availablecourses) && empty($existentcourses)) {
+                $extra = '';
+                if (!empty($config->course_helplink)) {
+                    $url = new moodle_url($config->course_helplink, array());
+                    $extra = '<br />' . html_writer::tag('a', get_string('help', 'local_coursefisher'), array('href' => $url));
+                }
+                notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
+            }
 
-                    foreach ($existentcourses as $coursegroup => $existentgroupelements) {
-                        echo html_writer::start_tag('ul', array('class' => 'existentcourses'));
-                        if (count($existentgroupelements) > 1) {
-                            if (!empty($coursegroup)) {
-                                echo html_writer::start_tag('li', array('class' => 'existentcourses coursegroup'));
-                                echo html_writer::tag('span', get_string('coursegroup', 'local_coursefisher'),
-                                                      array('class' => 'coursegrouptitle'));
-                                echo html_writer::start_tag('ul', array('class' => 'existentcourses'));
-                                echo implode("\n", $existentgroupelements);
-                                echo html_writer::end_tag('ul');
-                                echo html_writer::end_tag('li');
-                            } else {
-                                echo implode("\n", $existentgroupelements);
-                            }
+            echo html_writer::end_tag('div');
+            echo $OUTPUT->footer();
+        } else {
+            $coursehashes = str_split($courseid, strlen(md5('coursehash')));
+            $metacourseids = array();
+            $firstcourse = null;
+            $groupcourses = array();
+
+            foreach ($coursehashes as $coursehash) {
+                if (isset($teachercourses[$coursehash])) {
+                    $hashcourse = $teachercourses[$coursehash];
+
+                    $coursedata = new stdClass();
+                    $coursedata->idnumber = '';
+                    $coursedata->shortname = $backend->format_fields($config->course_shortname, $hashcourse);
+                    if (isset($config->course_code) && !empty($config->course_code)) {
+                        $coursedata->idnumber = $backend->format_fields($config->course_code, $hashcourse);
+                    }
+                    $coursedata->code = !empty($coursedata->idnumber) ? $coursedata->idnumber : $coursedata->shortname;
+                    $categories = array_filter(explode("\n",
+                                               $backend->format_fields($config->fieldlevel, $hashcourse)));
+                    $categoriesdescriptions = $backend->get_fields_description($categories);
+                    $coursedata->path = implode(' / ', $categoriesdescriptions);
+                    $coursedata->fullname = $backend->format_fields($config->course_fullname, $hashcourse);
+
+                    $userid = $USER->id;
+                    if (has_capability('local/coursefisher:addallcourses', $systemcontext)) {
+                        $userid = null;
+                    }
+                    if (!empty($action)) {
+                        /* Create course */
+                        $coursedata->summary = '';
+                        if (!empty($config->course_summary)) {
+                            $coursedata->summary = $backend->format_fields($config->course_summary, $hashcourse);
+                        }
+
+                        $coursedata->sectionzero = '';
+                        if (!empty($config->sectionzero_name)) {
+                            $coursedata->sectionzero = $backend->format_fields($config->sectionzero_name, $hashcourse);
+                        }
+
+                        $coursedata->educationalofferurl = '';
+                        if (!empty($config->educationaloffer_link)) {
+                            $coursedata->educationalofferurl = $backend->format_fields($config->educationaloffer_link, $hashcourse);
+                        }
+
+                        $coursedata->templateshortname = '';
+                        if (!empty($config->course_template)) {
+                            $coursedata->templateshortname = $backend->format_fields($config->course_template, $hashcourse);
+                        }
+
+                        $coursedata->notifycreation = false;
+                        if (!empty($config->email_condition)) {
+                            $parser = $backend->get_parser();
+                            $objects = $parser->substitute_objects($config->email_condition, false);
+                            $coursedata->notifycreation = $parser->eval_record($objects, (array)$hashcourse);
+                        }
+
+                        if ($firstcourse !== null
+                                && isset($config->linked_course_category) && !empty($config->linked_course_category)) {
+                            $categories[] = $backend->format_fields($config->linked_course_category, $hashcourse);
+                        }
+
+                        if (!empty($coursedata->idnumber)) {
+                            $oldcourse = $DB->get_record('course', array('idnumber' => $coursedata->idnumber));
                         } else {
-                            echo current($existentgroupelements);
+                            $oldcourse = $DB->get_record('course', array('shortname' => $coursedata->shortname));
                         }
-                        echo html_writer::end_tag('ul');
-                    }
-                }
-                if (empty($availablecourses) && empty($existentcourses)) {
-                    $extra = '';
-                    $helplink = get_config('local_coursefisher', 'course_helplink');
-                    if (!empty($helplink)) {
-                        $url = new moodle_url($helplink, array());
-                        $extra = '<br />' . html_writer::tag('a', get_string('help'), array('href' => $url));
-                    }
-                    notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
-                }
 
-                echo html_writer::end_tag('div');
-                echo $OUTPUT->footer();
-            } else {
-                $coursehashes = str_split($courseid, strlen(md5('coursehash')));
-                $metacourseids = array();
-                $firstcourse = null;
-                $groupcourses = array();
-
-                $coursesummarypattern = get_config('local_coursefisher', 'course_summary');
-                $sectionzeronamepattern = get_config('local_coursefisher', 'sectionzero_name');
-                $edulinkpattern = get_config('local_coursefisher', 'educationaloffer_link');
-                $templatepattern = get_config('local_coursefisher', 'course_template');
-                $emailconditionpattern = get_config('local_coursefisher', 'email_condition');
-                $linkedcategorypattern = get_config('local_coursefisher', 'linked_course_category');
-                $linktypepattern = get_config('local_coursefisher', 'linktype');
-
-                foreach ($coursehashes as $coursehash) {
-                    if (isset($teachercourses[$coursehash])) {
-                        $hashcourse = $teachercourses[$coursehash];
-
-                        $coursedata = new stdClass();
-                        $coursedata->idnumber = '';
-                        $coursedata->shortname = $backend->format_fields($courseshortnamepattern, $hashcourse);
-                        if (isset($coursecodepattern) && !empty($coursecodepattern)) {
-                            $coursedata->idnumber = $backend->format_fields($coursecodepattern, $hashcourse);
-                        }
-                        $coursedata->code = !empty($coursedata->idnumber) ? $coursedata->idnumber : $coursedata->shortname;
-                        $categories = array_filter(explode("\n",
-                                                   $backend->format_fields($fieldlevelpattern, $hashcourse)));
-                        $categoriesdescriptions = $backend->get_fields_description($categories);
-                        $coursedata->path = implode(' / ', $categoriesdescriptions);
-                        $coursedata->fullname = $backend->format_fields($coursefullnamepattern, $hashcourse);
-
-                        $userid = $USER->id;
-                        if (has_capability('local/coursefisher:addallcourses', $systemcontext)) {
-                            $userid = null;
-                        }
-                        if (!empty($action)) {
-                            /* Create course */
-                            $coursedata->summary = '';
-                            if (!empty($coursesummarypattern)) {
-                                $coursedata->summary = $backend->format_fields($coursesummarypattern, $hashcourse);
-                            }
-
-                            $coursedata->sectionzero = '';
-                            if (!empty($sectionzeronamepattern)) {
-                                $coursedata->sectionzero = $backend->format_fields($sectionzeronamepattern, $hashcourse);
-                            }
-
-                            $coursedata->educationalofferurl = '';
-                            if (!empty($edulinkpattern)) {
-                                $coursedata->educationalofferurl = $backend->format_fields($edulinkpattern, $hashcourse);
-                            }
-
-                            $coursedata->templateshortname = '';
-                            if (!empty($templatepattern)) {
-                                $coursedata->templateshortname = $backend->format_fields($templatepattern, $hashcourse);
-                            }
-
-                            $coursedata->notifycreation = false;
-                            if (!empty($emailconditionpattern)) {
-                                $parser = $backend->get_parser();
-                                $objects = $parser->substitute_objects($emailconditionpattern, false);
-                                $coursedata->notifycreation = $parser->eval_record($objects, (array)$hashcourse);
-                            }
-
-                            if ($firstcourse !== null && isset($linkedcategorypattern) && !empty($linkedcategorypattern)) {
-                                $categories[] = $backend->format_fields($linkedcategorypattern, $hashcourse);
-                            }
-
-                            if (!empty($coursedata->idnumber)) {
-                                $oldcourse = $DB->get_record('course', array('idnumber' => $coursedata->idnumber));
-                            } else {
-                                $oldcourse = $DB->get_record('course', array('shortname' => $coursedata->shortname));
-                            }
-
-                            $categoryitems = $backend->get_fields_items($categories);
-                            if ($newcourse = local_coursefisher_create_course($coursedata, $userid, $categoryitems,
-                                                                              $firstcourse, $existent)) {
-                                if ($firstcourse === null) {
-                                    $firstcourse = clone($newcourse);
-                                } else if (!isset($linktypepattern) || ($linktypepattern == 'meta')) {
+                        $categoryitems = $backend->get_fields_items($categories);
+                        if ($newcourse = local_coursefisher_create_course($coursedata, $userid, $categoryitems, $firstcourse)) {
+                            if ($firstcourse === null) {
+                                $firstcourse = clone($newcourse);
+                            } else if (!isset($config->linktype) || ($config->linktype == 'meta')) {
+                                if (($newcourse->id != $firstcourse->id) && !in_array($newcourse->id, $metacourseids)) {
                                     $metacourseids[] = $newcourse->id;
                                 }
-                            } else {
-                                notice(get_string('coursecreationerror', 'local_coursefisher'), new moodle_url('/index.php'));
                             }
+                        } else {
+                            notice(get_string('coursecreationerror', 'local_coursefisher'), new moodle_url('/index.php'));
+                        }
 
-                            if ($oldcourse) {
-                                if ($existent == 'join') {
-                                    if ($firstcourse !== null) {
-                                        local_coursefisher_add_linkedcourse_url($oldcourse, $firstcourse);
-                                        if (!isset($linktypepattern) || ($linktypepattern == 'meta')) {
+                        if ($oldcourse) {
+                            if ($existent == 'join') {
+                                if ($firstcourse !== null) {
+                                    local_coursefisher_add_linkedcourse_url($oldcourse, $firstcourse);
+                                    if (!isset($config->linktype) || ($config->linktype == 'meta')) {
+                                        if (($oldcourse->id != $firstcourse->id) && !in_array($oldcourse->id, $metacourseids)) {
                                             $metacourseids[] = $oldcourse->id;
                                         }
-                                    } else {
-                                        $firstcourse = clone($oldcourse);
                                     }
+                                } else {
+                                    $firstcourse = clone($oldcourse);
                                 }
                             }
-                        } else if (count($groupcourses) == 0) {
-                            // Get teacher grouped courses.
-                            $groupcourses = local_coursefisher_get_groupcourses($teachercourses, $coursehash, $coursedata);
                         }
+                    } else if (count($groupcourses) == 0) {
+                        // Get teacher grouped courses.
+                        $groupcourses = local_coursefisher_get_groupcourses($teachercourses, $coursehash, $coursedata);
                     }
                 }
+            }
 
-                if (!empty($action)) {
-                    if ($firstcourse !== null) {
-                        if (!empty($metacourseids) && (!isset($linktypepattern) || ($linktypepattern == 'meta'))) {
-                             local_coursefisher_add_metacourses($firstcourse, $metacourseids);
-                        }
-                        switch ($action) {
-                            case 'view':
-                            case 'edit':
-                                redirect(new moodle_url('/course/'.$action.'.php', array('id' => $firstcourse->id)));
-                            break;
-                            case 'import':
-                                redirect(new moodle_url('/backup/'.$action.'.php', array('id' => $firstcourse->id)));
-                            break;
-                        }
+            if (!empty($action)) {
+                if ($firstcourse !== null) {
+                    if (!empty($metacourseids) && (!isset($config->linktype) || ($config->linktype == 'meta'))) {
+                         local_coursefisher_add_metacourses($firstcourse, $metacourseids);
                     }
-                } else if (!empty($groupcourses)) {
-                    $preferences = new preferences_form(null, array('coursehash' => $coursehash, 'groupcourses' => $groupcourses));
-                    echo $OUTPUT->header();
-                    echo html_writer::start_tag('div', array('class' => 'teachercourses'));
-                    $preferences->display();
-                    echo html_writer::end_tag('div');
-                    echo $OUTPUT->footer();
+                    switch ($action) {
+                        case 'view':
+                        case 'edit':
+                            redirect(new moodle_url('/course/'.$action.'.php', array('id' => $firstcourse->id)));
+                        break;
+                        case 'import':
+                            redirect(new moodle_url('/backup/'.$action.'.php', array('id' => $firstcourse->id)));
+                        break;
+                    }
                 }
+            } else if (!empty($groupcourses)) {
+                $preferences = new preferences_form(null, array('coursehash' => $coursehash, 'groupcourses' => $groupcourses));
+                echo $OUTPUT->header();
+                echo html_writer::start_tag('div', array('class' => 'teachercourses'));
+                $preferences->display();
+                echo html_writer::end_tag('div');
+                echo $OUTPUT->footer();
             }
-        } else {
-            $extra = '';
-            $helplink = get_config('local_coursefisher', 'course_helplink');
-            if (!empty($helplink)) {
-                $url = new moodle_url($helplink, array());
-                $extra = '<br />' . html_writer::tag('a', get_string('help'), array('href' => $url));
-            }
-            notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
         }
+    } else {
+        $extra = '';
+        if (!empty($config->course_helplink)) {
+            $url = new moodle_url($config->course_helplink, array());
+            $extra = '<br />' . html_writer::tag('a', get_string('help', 'local_coursefisher'), array('href' => $url));
+        }
+        notice(get_string('nocourseavailable', 'local_coursefisher') . $extra, new moodle_url('/index.php'));
     }
 }

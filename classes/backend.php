@@ -15,27 +15,45 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course fisher backend class
+ * Course fisher base backend class
  *
- * @package    local
- * @subpackage coursefisher
+ * @package    local_coursefisher
  * @copyright  2014 and above Diego Fantoma e Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+namespace local_coursefisher;
 
 define('BACKENDFIELDMATCHSTRING', '/\[\%(\w+)(([#+-])(\d+))?\%\]/');
 define('USERFIELDMATCHSTRING', '/\[\%\!USER\:(\w+)(([#+-])(\d+))?\!\%\]/');
+define('ASSIGNFIELDMATCHSTRING', '/(\[\%!\w+:\w+!\%\]):(\w+)/');
 
-class local_coursefisher_backend {
+/**
+ * Class backend
+ *
+ * All coursefisher backend plugins are based on this class.
+ *
+ * @package    local_coursefisher
+ * @copyright  2014 and above Diego Fantoma e Roberto Pinna
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class backend {
 
+    /**
+     * @var string The backend name.
+     */
     public $name;
 
+    /**
+     * @var string Backend error message.
+     */
     private $error = '';
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
-        if (!is_subclass_of($this, 'local_coursefisher_backend')) {
+        if (!is_subclass_of($this, '\local_coursefisher\backend')) {
             debugging('Woops, wrong class initialized');
             return false;
         }
@@ -46,17 +64,39 @@ class local_coursefisher_backend {
             return false;
         }
 
-        $this->name = new lang_string('pluginname', 'coursefisherbackend_'.$backendname);
+        $this->name = new \lang_string('pluginname', 'coursefisherbackend_'.$backendname);
     }
 
+    /**
+     * Destructor.
+     */
+    public function __destruct() {
+    }
+
+    /**
+     * Initialize backend comunication.
+     *
+     * @return boolean
+     */
     public function init() {
         return true;
     }
 
+    /**
+     * Get backend data.
+     *
+     * @param boolean $alldata Define if method should not filter data
+     * @return boolean
+     */
     public function get_data($alldata = false) {
         return null;
     }
 
+    /**
+     * Check if backend settings are ok.
+     *
+     * @return boolean
+     */
     public function check_settings() {
         $result = true;
         $fields = array();
@@ -90,10 +130,36 @@ class local_coursefisher_backend {
         return $result;
     }
 
-    public function __destruct() {
+    /**
+     * Get field values from the assign string.
+     *
+     * @param string $assignstring The assign string
+     *
+     * @return object or false  With two arrais for names and values
+     */
+    public function get_fields_assign($assignstring) {
+        preg_match_all(ASSIGNFIELDMATCHSTRING, $assignstring, $matches);
+        if (isset($matches[1]) && isset($matches[2])) {
+            $fields = new \stdClass();;
+            $fields->names = array();
+            $fields->values = array();
+            foreach ($matches[1] as $id => $fieldname) {
+                $fields->names[] = '/' . quotemeta($fieldname) . '/';
+                $fields->values[] = $matches[2][$id];
+            }
+            return $fields;
+        }
+        return false;
     }
 
-    static public function user_field_value($matches) {
+    /**
+     * Get user profile field value for the matching name.
+     *
+     * @param array $matches The preg_match array
+     *
+     * @return string or false The user field value
+     */
+    public static function user_field_value($matches) {
         global $USER, $DB;
 
         if (isset($matches[1])) {
@@ -119,7 +185,15 @@ class local_coursefisher_backend {
         return null;
     }
 
-    static public function format_fields($formatstring, $data = null) {
+    /**
+     * Replace field placeholders with corrisponding values.
+     *
+     * @param string $formatstring The configuration string
+     * @param object $data The current course data
+     *
+     * @return string The replaced string
+     */
+    public static function format_fields($formatstring, $data = null) {
 
         $formattedstring = preg_replace_callback(USERFIELDMATCHSTRING, 'self::user_field_value', $formatstring);
         if (!empty($data)) {
@@ -135,32 +209,48 @@ class local_coursefisher_backend {
         return $formattedstring;
     }
 
-    static public function get_field($matches, $data) {
+    /**
+     * Replace matched placeholder with corrisponding value.
+     *
+     * @param array $matches The preg_match array
+     * @param object $data The current course data
+     *
+     * @return string The replaced string
+     */
+    public static function get_field($matches, $data) {
         $replace = null;
 
         if (isset($matches[1])) {
-            if (isset($data->$matches[1]) && !empty($data->$matches[1])) {
+            if (isset($data->{$matches[1]}) && !empty($data->{$matches[1]})) {
                 if (isset($matches[2])) {
                     switch($matches[3]) {
                         case '#':
-                            $replace = substr($data->$matches[1], 0, $matches[4]);
+                            $replace = substr($data->{$matches[1]}, 0, $matches[4]);
                         break;
                         case '+':
-                            $replace = $data->$matches[1] + $matches[4];
+                            $replace = $data->{$matches[1]} + $matches[4];
                         break;
                         case '-':
-                            $replace = $data->$matches[1] - $matches[4];
+                            $replace = $data->{$matches[1]} - $matches[4];
                         break;
                     }
                 } else {
-                    $replace = $data->$matches[1];
+                    $replace = $data->{$matches[1]};
                 }
             }
         }
         return $replace;
     }
 
-    static public function get_fields_items($field, $items = array('code' => 2, 'description' => 3)) {
+    /**
+     * Get requested items for the given fields.
+     *
+     * @param array $field The array of fields or the field name
+     * @param array $items The items mapping
+     *
+     * @return array The array of items
+     */
+    public static function get_fields_items($field, $items = array('code' => 2, 'description' => 3)) {
         $result = array();
         if (!is_array($field)) {
             $fields = array($field);
@@ -170,7 +260,7 @@ class local_coursefisher_backend {
 
         foreach ($fields as $element) {
             preg_match('/^((.+)\=\>)?(.+)?$/', $element, $matches);
-            $item = new stdClass();
+            $item = new \stdClass();
             foreach ($items as $itemname => $itemid) {
                 if (!empty($matches) && !empty($matches[$itemid])) {
                     $item->$itemname = $matches[$itemid];
@@ -197,7 +287,14 @@ class local_coursefisher_backend {
         }
     }
 
-    static public function get_fields_description($field) {
+    /**
+     * Get description items for the given fields.
+     *
+     * @param array $field The array of fields or the field name
+     *
+     * @return array The array of items
+     */
+    public static function get_fields_description($field) {
         return self::get_fields_items($field, array('description' => 3));
     }
 

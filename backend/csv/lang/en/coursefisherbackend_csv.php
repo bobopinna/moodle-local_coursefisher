@@ -17,8 +17,7 @@
 /**
  * Course fisher
  *
- * @package    local
- * @subpackage coursefisherbackend_csv
+ * @package coursefisherbackend_csv
  * @copyright  2014 and above Diego Fantoma
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

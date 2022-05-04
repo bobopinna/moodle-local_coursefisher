@@ -15,10 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course fisher - Course cration preferences form.
+ * Course fisher - Course creation preferences form.
  *
- * @package    local
- * @subpackage coursefisher
+ * @package    local_coursefisher
  * @copyright  2016 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +26,18 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 
+/**
+ * Course fisher - Course creation preferences form class.
+ *
+ * @package    local_coursefisher
+ * @copyright  2016 Roberto Pinna
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class preferences_form extends moodleform {
+
+    /**
+     * The preferences form definition.
+     */
     public function definition() {
         $mform = $this->_form;
 

@@ -15,30 +15,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course fisher
+ * Course fisher database backend
  *
- * @package    local
- * @subpackage coursefisherbackend_database
+ * @package coursefisherbackend_database
  * @copyright  2014 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace coursefisherbackend_database;
 
-require_once($CFG->libdir .'/adodb/adodb.inc.php');
-require_once(__DIR__.'/../lib.php');
+/**
+ * Course fisher database backend
+ *
+ * @package coursefisherbackend_database
+ * @copyright  2014 Roberto Pinna
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class backend extends \local_coursefisher\backend {
 
-class local_coursefisher_backend_database extends local_coursefisher_backend {
-
+    /**
+     * Constructor.
+     */
     public function __construct() {
+        global $CFG;
+
+        require_once($CFG->libdir .'/adodb/adodb.inc.php');
+
         $this->name = 'database';
     }
 
     /**
-     * Reads informations for teacher courses from external database,
-     * then returns it in an array of objects.
+     * Reads informations for teacher courses from external database, then returns it in an array of objects.
      *
-     * @return array
+     * @param boolean $alldata Return all data without query filtering
+     *
+     * @return array The courses data
      */
     public function get_data($alldata=false) {
         $result = array();
@@ -56,12 +67,13 @@ class local_coursefisher_backend_database extends local_coursefisher_backend {
                         $coursesdb->Close();
                         debugging(get_string('cantgetdata', 'coursefisherbackend_database'));
                         debugging($sql);
+                        debugging($coursesdb->errorMsg());
                         return false;
                     } else {
                         if (!$rs->EOF) {
                             while ($fieldsobj = $rs->FetchRow()) {
                                 $fieldsobj = (object)array_change_key_case((array)$fieldsobj , CASE_LOWER);
-                                $row = new stdClass();
+                                $row = new \stdClass();
                                 foreach ($fieldsobj as $name => $value) {
                                     if (mb_detect_encoding($value, mb_detect_order(), true) !== 'UTF-8') {
                                         $value = mb_convert_encoding($value, 'UTF-8');
@@ -87,6 +99,11 @@ class local_coursefisher_backend_database extends local_coursefisher_backend {
         return $result;
     }
 
+    /**
+     * Initialize database comunication.
+     *
+     * @return object The ADOdb connection object
+     */
     private function db_init() {
 
         $db = false;
@@ -94,9 +111,13 @@ class local_coursefisher_backend_database extends local_coursefisher_backend {
         $locator = get_config('local_coursefisher', 'locator');
         if (!empty($locator)) {
             // Connect to the external database (forcing new connection).
-            $db = ADONewConnection($locator);
-            if ($db) {
-                $db->SetFetchMode(ADODB_FETCH_ASSOC);
+            try {
+                $db = ADONewConnection($locator);
+                if ($db) {
+                    $db->SetFetchMode(ADODB_FETCH_ASSOC);
+                }
+            } catch (Exception $e) {
+                debugging($e->getTraceAsString());
             }
         }
 

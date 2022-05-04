@@ -17,8 +17,7 @@
 /**
  * Version details
  *
- * @package    local
- * @subpackage coursefisherbackend_json
+ * @package coursefisherbackend_json
  * @copyright 2014 and above Angelo Calò
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

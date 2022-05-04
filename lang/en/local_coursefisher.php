@@ -33,7 +33,7 @@ $string['coursefisher:addcourses'] = 'Add own courses got from Course Fisher';
 
 // Settings strings.
 $string['generalsettings'] = 'General Settings';
-$string['title'] = 'Title';
+$string['title'] = 'Link title used in Settings and Navigation block';
 $string['configtitle'] = 'The name of administration block section where users find Course Fisher utilities';
 $string['coursehelplink'] = 'Help Page URL';
 $string['configcoursehelplink'] = 'If defined a link will be shown in Course Fisher section of Administration block';
@@ -41,8 +41,9 @@ $string['actions'] = 'Actions';
 $string['configactions'] = 'Enable what the teacher can choose to do after course creation';
 $string['autocreation'] = 'Automatic course creation';
 $string['configautocreation'] = 'If the choosen backend provide it, this enable cron managed automatic courses creation.';
+$string['coursesautocreationtask'] = 'Automatic courses creation task';
 
-$string['configurationbackend'] = 'Backend Configuration';
+$string['backendsettings'] = 'Backend Settings';
 $string['backend'] = 'Backend';
 $string['configbackend'] = 'Backend Type';
 $string['locator'] = 'Locator (URL)';
@@ -56,6 +57,7 @@ $string['configfirstrow'] = 'Useful in file backends, es. list of CSV fields';
 $string['fieldlist'] = 'Fields list';
 $string['configfieldlist'] = 'The list of returned field names, one for row in a first match order';
 $string['configcoursefields'] = '<strong>Note:</strong><br />Fields in "Fields list" can be combined to create string using [%fieldname%] notation.<br />Numeric fields can use [%fieldname+number%] and [%fieldname-number%] notation to modify value. String fields can be trunched at nth character using [%fieldname#n%].<br />Example: "Courses [%department#10%] - [%year%]/[%year+1%]"';
+$string['coursesettings'] = 'Course Settings';
 $string['fieldlevel'] = 'Categories level list';
 $string['configfieldlevel'] = 'One level per row. The root category level in the first row. You can use idnumber=>categoryname to assign an idnumber to category';
 $string['courseidnumber'] = 'Course Id number';
@@ -64,8 +66,10 @@ $string['courseshortname'] = 'Course shortname';
 $string['fieldtest'] = 'Test values';
 $string['configfieldtest'] = 'Backend configuration test values, one for row. Syntax [field]:value';
 $string['configurationtest'] = 'Test Backend Configuration';
+$string['sortcoursesby'] = 'Sort courses by';
+$string['configsortcoursesby'] = 'How courses should be sorted in categories';
 
-$string['coursesgroup'] = 'Courses group creation';
+$string['coursesgroupsettings'] = 'Courses group Settings';
 $string['grouprule'] = 'Group rule';
 $string['configgrouprule'] = 'This define a comparison rule to match father with child courses. Example: [%father_code%]=[%year%]-[%degree_cod%]-[%course_cod%]';
 $string['forceonlygroups'] = 'Force only group creation';
@@ -78,7 +82,7 @@ $string['noguestormeta'] = 'You must enable Guest or Meta Link enrolment plugins
 $string['linkedcoursecategory'] = 'Child courses category';
 $string['configlinkedcoursecategory'] = 'Set this to create all child courses in a course category. Example: "Child Courses [%department#10%] - [%year%]/[%year+1%]"';
 
-$string['coursessettings'] = 'Courses custom settings';
+$string['coursecontentsettings'] = 'Course content Settings';
 $string['coursesummary'] = 'Course summary';
 $string['configcoursesummary'] = 'This text will set as course summary. Fields get from backend could be used to customize it.';
 $string['sectionzero'] = 'Course general section title';
@@ -101,6 +105,7 @@ $string['ifuserprofilefield'] = 'If user profile field';
 // Plugin interface strings.
 $string['addcourses'] = 'Add courses';
 $string['addcourse'] = 'Add course';
+$string['help'] = 'Help';
 $string['notenabled'] = 'Sorry, you are not enabled to add courses';
 $string['nocourseavailable'] = 'Sorry, no available courses';
 $string['coursegroup'] = 'Course group';
@@ -153,3 +158,4 @@ You need to check a Course Fisher new course<br />
 Course URL: <a href="{$a->courseurl}">{$a->courseurl}</a><br />
 Educational Offer Page URL: <a href="{$a->educationalofferurl}">{$a->educationalofferurl}</a>';
 $string['existentcourse'] = 'This course was already created';
+$string['privacy:metadata'] = 'The Course Fisher plugin get data from backend, create courses and assign teachers role. It does not store any data itself.';

@@ -17,8 +17,7 @@
 /**
  * Version details
  *
- * @package    local
- * @subpackage coursefisherbackend_database
+ * @package coursefisherbackend_database
  * @copyright 2014 and above Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -17,18 +17,16 @@
 /**
  * Version details
  *
- * @package    local
- * @subpackage coursefisher
+ * @package   local_coursefisher
  * @copyright 2014 and above Roberto Pinna, Diego Fantoma, Angelo Calò
  * @copyright 2016 and above Francesco Carbone
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017022600;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2022043000;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->release   = '2.0';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2010112400;        // Requires this Moodle version.
+$plugin->requires  = 2018051700;        // Requires this Moodle version.
 $plugin->component = 'local_coursefisher'; // Full name of the plugin (used for diagnostics).
-$plugin->cron = 3600;

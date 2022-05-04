@@ -17,10 +17,9 @@
 /**
  * Version details
  *
- * @package    local
- * @subpackage coursefisherbackend_csv
- * @copyright 2014 and above Diego Fantoma
- * @copyright 2017 and above Roberto Pinna
+ * @package    coursefisherbackend_csv
+ * @copyright  2014 and above Diego Fantoma
+ * @copyright  2017 and above Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

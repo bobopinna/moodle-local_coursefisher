@@ -25,15 +25,21 @@ namespace local_coursefisher\plugininfo;
 
 use core\plugininfo\base;
 
-defined('MOODLE_INTERNAL') || die();
-
-
+/**
+ * Subplugin info class.
+ *
+ * @package   local_coursefisher
+ * @copyright 2014 Roberto Pinna
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class coursefisherbackend extends base {
+
+    /**
+     * Do not allow users to uninstall backend plugins as it could cause coursefisher to break.
+     *
+     * @return bool
+     */
     public function is_uninstall_allowed() {
-        if ($this->is_standard()) {
-            return false;
-        }
-        return true;
+        return false;
     }
 }
-

@@ -15,32 +15,46 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course fisher
+ * Course fisher CSV backend
  *
- * @package    local
- * @subpackage coursefisherbackend_csv
+ * @package    coursefisherbackend_csv
  * @copyright  2014 Diego Fantoma
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace coursefisherbackend_csv;
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Course fisher CSV backend class
+ *
+ * @package    coursefisherbackend_csv
+ * @copyright  2014 Diego Fantoma
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class backend extends \local_coursefisher\backend {
 
-require_once(__DIR__ . '/../lib.php');
-
-class local_coursefisher_backend_csv extends local_coursefisher_backend {
-
+    /**
+     * Get backend plugin name.
+     *
+     * @return string The plugin name translation
+     */
     public function description() {
         return(get_string('pluginname', 'coursefisherbackend_csv'));
     }
 
+    /**
+     * Get csv row fields.
+     *
+     * @param string $csvstring The csv row string
+     *
+     * @return array Array of give row field values
+     */
     private function get_record($csvstring) {
-        global $CFG;
         $ray = array();
         $parser = $this->get_parser();
         $field = array_flip($parser->getFields());
-        $t = preg_split("/".$CFG->local_coursefisher_separator."/", $csvstring);
+        $t = preg_split('/'.get_config('local_coursefisher', 'separator').'/', $csvstring);
 
-        while (list($tk, $tv) = each($t)) {
+        foreach ($t as $tk => $tv) {
             if (isset($field[$tk])) {
                 $ray[$field[$tk]] = $tv;
             }
@@ -48,8 +62,15 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
         return($ray);
     }
 
+    /**
+     * Fetch data from csv backend and store it in local cache file.
+     *
+     * @return integer or false The number of cached records
+     */
     public function fetch_to_cache() {
         global $CFG;
+
+        $config = get_config('local_coursefisher');
 
         $parser = $this->get_parser();
         $c = 0;
@@ -64,12 +85,12 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
             return(false);
         }
 
-        if ($fd = @fopen ($CFG->local_coursefisher_locator, "r", false, $context)) {
+        if ($fd = @fopen ($config->locator, 'r', false, $context)) {
             while (!feof ($fd) && $c < 5000000) {
                 $buffer = fgets($fd, 4096);
-                if (!($CFG->local_coursefisher_firstrow && $c == 0)) {
+                if (!($config->firstrow && $c == 0)) {
                     $ray = $this->get_record(rtrim($buffer));
-                    $strecords[$c] = $parser->prepare_record($CFG->local_coursefisher_parameters, $ray);
+                    $strecords[$c] = $parser->prepare_record($config->parameters, $ray);
                     $fullrecords[$c] = serialize($ray);
 
                     fwrite($fp1, $strecords[$c]."\r\n");
@@ -85,6 +106,13 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
         return(false);
     }
 
+    /**
+     * Fetch data from backend local cache file.
+     *
+     * @param boolean $override If need to override field values
+     *
+     * @return array or false The cached records
+     */
     public function fetch_from_cache($override = false) {
         global $CFG;
 
@@ -92,27 +120,33 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
         $lines = array();
 
         if (false === ($strecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp'))) {
-            return(false);
+            return false;
         }
 
         if (false === ($fullrecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache2.tmp'))) {
-            return(false);
+            return false;
         }
 
-        $found = 0;
-        while ((list($key, $value) = each($strecords)) && $found == 0) {
+        foreach ($strecords as $key => $value) {
             if (eval($parser->substitute_objects($value, $override))) {
                 $lines[] = (object)unserialize($fullrecords[$key]);
             }
         }
 
-        return($lines);
+        return $lines;
 
     }
 
 
+    /**
+     * Fetch data from csv backend.
+     *
+     * @param boolean $usetestvalue If need to override field values with test values
+     *
+     * @return array or false The fetched records
+     */
     public function http_fetch($usetestvalue = false) {
-        global $CFG;
+        $config = get_config('local_coursefisher');
 
         $parser = $this->get_parser();
         $c = 0;
@@ -121,15 +155,15 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
 
         $override = false;
         if ($usetestvalue) {
-            $override = $parser->parse_field_assign($CFG->local_coursefisher_fieldtest);
+            $override = $parser->parse_field_assign($config->fieldtest);
         }
 
-        if ($fd = fopen($CFG->local_coursefisher_locator, "r", false, $context)) {
+        if ($fd = fopen($config->locator, 'r', false, $context)) {
             while (!feof($fd) && $c < 500000) {
                 $buffer = fgets($fd, 4096);
-                if (!($CFG->local_coursefisher_firstrow && $c == 0)) {
+                if (!($config->firstrow && $c == 0)) {
                     $ray = $this->get_record(rtrim($buffer));
-                    if ($parser->eval_record($parser->substitute_objects($CFG->local_coursefisher_parameters, $override), $ray) ) {
+                    if ($parser->eval_record($parser->substitute_objects($config->parameters, $override), $ray) ) {
                         $lines[] = (object)$ray;
                     }
                 }
@@ -137,10 +171,17 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
             }
             fclose ($fd);
         }
-        return($lines);
+        return $lines;
     }
 
 
+    /**
+     * Reads informations for teacher courses from csv backend, then returns it in an array of objects.
+     *
+     * @param boolean $alldata Return all data without query filtering
+     *
+     * @return array The courses data
+     */
     public function get_data($alldata = false) {
         global $CFG;
 
@@ -178,6 +219,12 @@ class local_coursefisher_backend_csv extends local_coursefisher_backend {
 
     }
 
+
+    /**
+     * The cron function to fetch course records and store in local cache.
+     *
+     * @return true
+     */
     public function cron() {
         global $CFG;
 

@@ -15,11 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Privacy Subsystem implementation for local plugin Course Fisher.
  *
- * @package coursefisherbackend_json
- * @copyright 2014 and above Angelo Calò
+ * @package    local_coursefisher
+ * @copyright  2020 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Backend file JSON';
+namespace local_coursefisher\privacy;
+
+/**
+ * Privacy Subsystem for local_coursefisher implementing null_provider.
+ *
+ * @copyright  2020 Roberto Pinna
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}
