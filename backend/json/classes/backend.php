@@ -133,15 +133,19 @@ class backend extends \local_coursefisher\backend {
                             }
 
                             $filterpass = true;
-                            if (!empty($config->parameters)) {
-                                $filter = new \local_coursefisher_evaluator();
+                            if (!$alldata) {
+                                if (!empty($config->parameters)) {
+                                    $expression = $this->format_fields($config->parameters, $row);
 
-                                $filter->variables = $row;
-
-                                $filterpass = $filter->execute($parameters);
+                                    $filter = new \local_coursefisher\evaluator();
+                                    $filterpass = $filter->evaluate($expression);
+                                    if ($filterpass === false) {
+                                        debugging($filter->last_error);
+                                    }
+                                }
                             }
 
-                            if ($alldata || $filterpass) {
+                            if ($filterpass) {
                                 $result[] = $row;
                             }
                         }
