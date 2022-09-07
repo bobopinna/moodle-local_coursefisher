@@ -294,7 +294,7 @@ if (!empty($backendclassname) && class_exists($backendclassname)) {
 
                         $coursedata->notifycreation = false;
                         if (!empty($config->email_condition)) {
-                            $expression = $this->format_fields($config->email_condition, (array)$hashcourse);
+                            $expression = $this->format_fields($config->email_condition, $hashcourse);
 
                             $filter = new \local_coursefisher\evaluator();
                             $filterpass = $filter->evaluate($expression);
