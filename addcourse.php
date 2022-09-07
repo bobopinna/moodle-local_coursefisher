@@ -294,9 +294,14 @@ if (!empty($backendclassname) && class_exists($backendclassname)) {
 
                         $coursedata->notifycreation = false;
                         if (!empty($config->email_condition)) {
-                            $parser = $backend->get_parser();
-                            $objects = $parser->substitute_objects($config->email_condition, false);
-                            $coursedata->notifycreation = $parser->eval_record($objects, (array)$hashcourse);
+                            $expression = $this->format_fields($config->email_condition, (array)$hashcourse);
+
+                            $filter = new \local_coursefisher\evaluator();
+                            $filterpass = $filter->evaluate($expression);
+                            if ($filterpass === false) {
+                                debugging($filter->last_error);
+                            }
+                            $coursedata->notifycreation = $filterpass == 1 ? true : false;
                         }
 
                         if ($firstcourse !== null
