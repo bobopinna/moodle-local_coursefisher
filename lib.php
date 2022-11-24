@@ -53,7 +53,7 @@ function local_coursefisher_extend_navigation(global_navigation $navigation) {
  * @return void
  */
 function local_coursefisher_extend_settings_navigation(settings_navigation $nav, context $context) {
-    global $DB, $USER;
+    global $DB, $USER, $CFG;
 
     if ($context->contextlevel == CONTEXT_COURSE) {
         if ($instances = enrol_get_instances($context->instanceid, true)) {
@@ -69,15 +69,18 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
                         if ($courselinkformat || $singleurlformat) {
                             if ($metacourseinstances = enrol_get_instances($metacoursecontext->instanceid, true)) {
                                 foreach ($metacourseinstances as $metacourseinstance) {
-                                    if ($metacourseinstance->enrol === 'self') {
+                                    require_once($CFG->dirroot . '/enrol/' . $metacourseinstance->enrol . '/lib.php');
+                                    $enrolclassname = 'enrol_' . $metacourseinstance->enrol . '_plugin';
+                                    $enrol = new $enrolclassname();
+                                    if ($enrol->get_unenrolself_link($metacourseinstance) != null) {
                                         $query = array('enrolid' => $metacourseinstance->id, 'userid' => $USER->id);
                                         if ($userenrolment = $DB->get_record('user_enrolments', $query)) {
                                             $enrolledbefore = $userenrolment->timestart < time();
                                             $stillenrolled = ($userenrolment->timeend == 0) || ($userenrolment->timeend < time());
                                             if ($enrolledbefore && $stillenrolled) {
                                                 $node = $nav->get('courseadmin');
-                                                $unenrolink = new moodle_url('/enrol/self/unenrolself.php',
-                                                                             array('enrolid' => $metacourseinstance->id));
+                                                $unenrolink = new moodle_url('/enrol/' . $metacourseinstance->enrol .
+                                                              '/unenrolself.php', array('enrolid' => $metacourseinstance->id));
                                                 $unenrolstr = get_string('unenrolme', 'enrol', $metacourse->shortname);
                                                 $icon = new pix_icon('i/user', '');
                                                 $node->add($unenrolstr, $unenrolink, navigation_node::TYPE_USER, null, null, $icon);
