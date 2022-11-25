@@ -120,7 +120,7 @@ class backend extends \local_coursefisher\backend {
 
                 if (!empty($jsondata)) {
                     $fieldlist = trim($config->fieldlist);
-                    $fields = array_flip(preg_split("/\n|\s/", $fieldlist, -1, PREG_SPLIT_NO_EMPTY));
+                    $fields = preg_split("/\n|\s/", $fieldlist, -1, PREG_SPLIT_NO_EMPTY);
 
                     foreach ($jsondata as $element) {
                         if (!empty($element)) {
