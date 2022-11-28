@@ -1,4 +1,4 @@
-#Course Fisher
+# Course Fisher
 
 Course Fisher is a Moodle local plugin that enable autonomous course creation for teachers.
 Authorizations are get from an external source (DB, csv file, json file, etc).
@@ -7,7 +7,7 @@ Course Fisher is a complete refurbished version of Course Fisher block.
 
 You can install Course Fisher local plugin side by side to Course Fisher block so the new plugin gets the existing configuration, then you can uninstall Course Fisher block and go on with new features.
 
- ## [Changelog](CHANGES.md)
+## [Changelog](CHANGES.md)
 
 ## Install
 
