@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [2.0] - 2022-11-28
+## [2.0] - 2022-04-30
 ### Changed
 - plugin type
 - full rewrite of all code
