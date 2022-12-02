@@ -35,8 +35,6 @@ require_once(__DIR__ . '/locallib.php');
 function local_coursefisher_extend_navigation(global_navigation $navigation) {
     global $PAGE, $OUTPUT;
 
-    $coursefishernav = local_coursefisher_navigation($PAGE->navigation, $PAGE->context);
-
     if ($PAGE->pagelayout == 'mycourses') {
         $coursefisherlinks = local_coursefisher_links($PAGE->context);
         if (!empty($coursefisherlinks)) {
@@ -94,6 +92,7 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
             }
         }
     }
+    local_coursefisher_navigation($nav, $context);
 }
 
 /**
@@ -109,20 +108,26 @@ function local_coursefisher_navigation($nav, $context) {
         if (empty($coursefishertitle)) {
             $coursefishertitle = get_string('pluginname', 'local_coursefisher');
         }
-        $coursefishernav = $nav->add($coursefishertitle, null, navigation_node::TYPE_CONTAINER);
+        $coursefishernav = $nav->prepend($coursefishertitle, null, navigation_node::TYPE_CONTAINER);
+        $coursefishernav->make_active();
 
         $url = new moodle_url('/local/coursefisher/addcourse.php', array());
         $coursefishertitle = get_config('local_coursefisher', 'title');
         if (empty($coursefishertitle)) {
             $coursefishertitle = get_string('pluginname', 'local_coursefisher');
         }
-        $addcoursestr = get_string('addcourses', 'local_coursefisher');
-        $node = $coursefishernav->add($addcoursestr, $url, navigation_node::TYPE_SETTING, null, 'coursefisher');
+        $addcoursestr = get_string('addcourse', 'local_coursefisher');
+        $nodetype = navigation_node::NODETYPE_LEAF;
+        $icon = new pix_icon('t/add', '');
+        $node = $coursefishernav->add($addcoursestr, $url, $nodetype, $addcoursestr, 'coursefisher', $icon);
 
         $helplink = get_config('local_coursefisher', 'course_helplink');
         if (!empty($helplink)) {
+            $helpstr = get_string('help', 'local_coursefisher');
             $url = new moodle_url($helplink, array());
-            $coursefishernav->add(get_string('help', 'local_coursefisher'), $url);
+            $nodetype = navigation_node::NODETYPE_LEAF;
+            $icon = new pix_icon('help', '');
+            $coursefishernav->add($helpstr, $url, $nodetype, $helpstr, 'helpcoursefisher', $icon);
         }
     }
 }
