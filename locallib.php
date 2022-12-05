@@ -110,13 +110,8 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
     }
 
     if ($linkedcourse !== null) {
-        if (in_array('courselink', get_sorted_course_formats(true))) {
-            $newcourse->format = 'courselink';
-            $newcourse->linkedcourse = $linkedcourse->shortname;
-        } else {
-            $newcourse->format = 'singleactivity';
-            $newcourse->activitytype = 'url';
-        }
+        $newcourse->format = 'singleactivity';
+        $newcourse->activitytype = 'url';
     }
 
     $course = null;

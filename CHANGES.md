@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- removed support to courselink corse format plugin
 
 ## [2.0] - 2022-04-30
 ### Changed

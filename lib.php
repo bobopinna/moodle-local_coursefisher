@@ -62,9 +62,7 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
                         $metacourse = $DB->get_record('course', array('id' => $instance->customint1));
                         $activitytype = $DB->get_field('course_format_options', 'value',
                                                        array('courseid' => $instance->customint1, 'name' => 'activitytype'));
-                        $courselinkformat = $metacourse->format == 'courselink';
-                        $singleurlformat = ($metacourse->format == 'singleactivity') && ($activitytype == 'url');
-                        if ($courselinkformat || $singleurlformat) {
+                        if (($metacourse->format == 'singleactivity') && ($activitytype == 'url')) {
                             if ($metacourseinstances = enrol_get_instances($metacoursecontext->instanceid, true)) {
                                 foreach ($metacourseinstances as $metacourseinstance) {
                                     require_once($CFG->dirroot . '/enrol/' . $metacourseinstance->enrol . '/lib.php');
