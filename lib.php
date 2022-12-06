@@ -101,13 +101,19 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
  * @return void
  */
 function local_coursefisher_navigation($nav, $context) {
+    global $PAGE;
     if (local_coursefisher_enabled_user($context)) {
         $coursefishertitle = get_config('local_coursefisher', 'title');
         if (empty($coursefishertitle)) {
             $coursefishertitle = get_string('pluginname', 'local_coursefisher');
         }
         $coursefishernav = $nav->prepend($coursefishertitle, null, navigation_node::TYPE_CONTAINER);
-        $coursefishernav->make_active();
+
+        // Open Course Fisher navigation tree in dashboard.
+        $pageurl = $PAGE->url->get_path();
+        if ($pageurl == '/my/index.php') {
+            $coursefishernav->make_active();
+        }
 
         $url = new moodle_url('/local/coursefisher/addcourse.php', array());
         $coursefishertitle = get_config('local_coursefisher', 'title');
