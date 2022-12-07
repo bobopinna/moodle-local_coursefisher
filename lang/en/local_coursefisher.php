@@ -27,21 +27,16 @@ $string['pluginname'] = 'Course Fisher';
 $string['subplugintype_coursefisherbackend'] = 'Backend';
 $string['subplugintype_coursefisherbackend_plural'] = 'Backends';
 
-// Accessibility strings.
+// Availability strings.
 $string['coursefisher:addallcourses'] = 'Add all courses got from Course Fisher';
 $string['coursefisher:addcourses'] = 'Add own courses got from Course Fisher';
 
 // Settings strings.
 $string['generalsettings'] = 'General Settings';
-$string['title'] = 'Link title used in Settings and Navigation block';
-$string['configtitle'] = 'The name of administration block section where users find Course Fisher utilities';
+$string['title'] = 'Title';
+$string['configtitle'] = 'The name of administration block sub tree where users find Course Fisher tools';
 $string['coursehelplink'] = 'Help Page URL';
-$string['configcoursehelplink'] = 'If defined a link will be shown in Course Fisher section of Administration block';
-$string['actions'] = 'Actions';
-$string['configactions'] = 'Enable what the teacher can choose to do after course creation';
-$string['autocreation'] = 'Automatic course creation';
-$string['configautocreation'] = 'If the choosen backend provide it, this enable cron managed automatic courses creation.';
-$string['coursesautocreationtask'] = 'Automatic courses creation task';
+$string['configcoursehelplink'] = 'If defined a link or a button will be shown near Course Fisher tools';
 
 $string['backendsettings'] = 'Backend Settings';
 $string['backend'] = 'Backend';
@@ -57,17 +52,22 @@ $string['configfirstrow'] = 'Useful in file backends, es. list of CSV fields';
 $string['fieldlist'] = 'Fields list';
 $string['configfieldlist'] = 'The list of returned field names, one for row in a first match order';
 $string['configcoursefields'] = '<strong>Note:</strong><br />Fields in "Fields list" can be combined to create string using [%fieldname%] notation.<br />Numeric fields can use [%fieldname+number%] and [%fieldname-number%] notation to modify value. String fields can be trunched at nth character using [%fieldname#n%].<br />Example: "Courses [%department#10%] - [%year%]/[%year+1%]"';
+$string['fieldtest'] = 'Test values';
+$string['configfieldtest'] = 'Backend configuration test values, one for row. Syntax [field]:value';
+$string['configurationtest'] = 'Test Backend Configuration';
+
 $string['coursesettings'] = 'Course Settings';
 $string['fieldlevel'] = 'Categories level list';
 $string['configfieldlevel'] = 'One level per row. The root category level in the first row. You can use idnumber=>categoryname to assign an idnumber to category';
 $string['courseidnumber'] = 'Course Id number';
 $string['coursefullname'] = 'Course fullname';
 $string['courseshortname'] = 'Course shortname';
-$string['fieldtest'] = 'Test values';
-$string['configfieldtest'] = 'Backend configuration test values, one for row. Syntax [field]:value';
-$string['configurationtest'] = 'Test Backend Configuration';
+$string['actions'] = 'Actions';
+$string['configactions'] = 'Enable what the teacher can choose to do after course creation';
 $string['sortcoursesby'] = 'Sort courses by';
 $string['configsortcoursesby'] = 'How courses should be sorted in categories';
+$string['autocreation'] = 'Automatic course creation';
+$string['configautocreation'] = 'If the choosen backend provide it, this enable cron managed automatic courses creation.';
 
 $string['coursesgroupsettings'] = 'Courses group Settings';
 $string['grouprule'] = 'Group rule';
@@ -100,7 +100,10 @@ $string['configemailcondition'] = 'A notification will be sent, on course creati
 
 $string['filter'] = 'Visibility';
 $string['coursefisherwill'] = 'Course Fisher will be';
+$string['shown'] = 'Shown';
+$string['hidden'] = 'Hidden';
 $string['ifuserprofilefield'] = 'If user profile field';
+$string['nouserfilterset'] = 'No user filter set';
 
 // Plugin interface strings.
 $string['addcourses'] = 'Add courses';
@@ -123,13 +126,11 @@ $string['backendfailure'] = 'Can not connect to courses backend';
 $string['backendnotinstalled'] = 'The chosen backend is not installed';
 $string['backendnotset'] = 'Backend not set, please choose one and save configuration before test';
 $string['configerrors'] = 'Found some configuration errors';
+$string['coursesautocreationtask'] = 'Automatic courses creation task';
 $string['edit'] = 'Edit course settings';
 $string['view'] = 'View course';
 $string['import'] = 'Import data from an other course';
 $string['coursenotfound'] = 'Course not found';
-$string['shown'] = 'Shown';
-$string['hidden'] = 'Hidden';
-$string['nouserfilterset'] = 'No user filter set';
 $string['courselink'] = 'Linked course';
 $string['courselinkmessage'] = 'This course is linked to {$a}. Please click the link below';
 $string['choosewhatadd'] = 'Choose what would you add:';
