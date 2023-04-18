@@ -97,6 +97,9 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
     }
 
     $newcourse->startdate = time();
+    if (isset($courseconfig->courseduration) && !empty($courseconfig->courseduration)) {
+        $newcourse->enddate = $newcourse->startdate + $courseconfig->courseduration;
+    }
 
     $newcourse->fullname = $coursedata->fullname;
     $newcourse->shortname = $coursedata->shortname;
