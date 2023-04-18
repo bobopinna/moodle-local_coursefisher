@@ -192,8 +192,8 @@ if (!empty($backendclassname) && class_exists($backendclassname)) {
                                                       array('class' => 'coursegrouptitle'));
                             } else {
                                 $grouphash = implode('', array_keys($availablegroupelements));
-                                $groupurl = new moodle_url('/blocks/course_fisher/addcourse.php', array('courseid' => $grouphash));
-                                echo html_writer::tag('a', get_string('addcoursegroup', 'block_course_fisher'),
+                                $groupurl = new moodle_url('/local/coursefisher/addcourse.php', array('courseid' => $grouphash));
+                                echo html_writer::tag('a', get_string('addcoursegroup', 'local_coursefisher'),
                                                       array('href' => $groupurl, 'class' => 'addcoursegrouplink'));
                             }
                             echo html_writer::start_tag('ul', array('class' => 'availablecourses'));
