@@ -60,7 +60,7 @@ if (!empty($backendname)) {
                     echo '<table>' . "\n";
                     $first = true;
                     foreach ($backenddata as $row) {
-                        if (!empty($row) && count($row)) {
+                        if (!empty($row)) {
                             if ($first) {
                                 echo '<tr>';
                                 foreach ($row as $key => $field) {
