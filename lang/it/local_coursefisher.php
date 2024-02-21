@@ -102,6 +102,7 @@ $string['filter'] = 'Visibilità';
 $string['coursefisherwill'] = 'Course Fisher verr&agrave;';
 $string['shown'] = 'Mostrato';
 $string['hidden'] = 'Nascosto';
+$string['disabled'] = 'Disabilitato';
 $string['ifuserprofilefield'] = 'se il campo del profilo utente';
 $string['nouserfilterset'] = 'Nessun filtro definito';
 
@@ -110,7 +111,7 @@ $string['addcourses'] = 'Aggiungi corsi';
 $string['addcourse'] = 'Aggiungi corso';
 $string['help'] = 'Aiuto';
 $string['notenabled'] = 'Spiacente, non sei abilitato ad aggiungere corsi';
-$string['nocourseavailable'] = 'Spicente non ci sono corsi attivabili';
+$string['nocourseavailable'] = 'Spiacente non ci sono corsi attivabili';
 $string['coursegroup'] = 'Gruppo di corsi';
 $string['addcoursegroup'] = 'Aggiungi gruppo di corsi';
 $string['addsinglecourse'] = 'Aggiungi corso singolo';
