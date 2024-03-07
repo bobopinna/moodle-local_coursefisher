@@ -19,6 +19,7 @@
  *
  * @package    coursefisherbackend_csv
  * @copyright  2014 Diego Fantoma
+ * @copyright  2022 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace coursefisherbackend_csv;
@@ -28,6 +29,7 @@ namespace coursefisherbackend_csv;
  *
  * @package    coursefisherbackend_csv
  * @copyright  2014 Diego Fantoma
+ * @copyright  2022 Roberto Pinna
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backend extends \local_coursefisher\backend {
@@ -38,7 +40,7 @@ class backend extends \local_coursefisher\backend {
      * @return string The plugin name translation
      */
     public function description() {
-        return(get_string('pluginname', 'coursefisherbackend_csv'));
+        return get_string('pluginname', 'coursefisherbackend_csv');
     }
 
     /**
@@ -49,17 +51,20 @@ class backend extends \local_coursefisher\backend {
      * @return array Array of give row field values
      */
     private function get_record($csvstring) {
-        $ray = array();
-        $parser = $this->get_parser();
-        $field = array_flip($parser->getFields());
-        $t = preg_split('/'.get_config('local_coursefisher', 'separator').'/', $csvstring);
+        $separator = get_config('local_coursefisher', 'separator');
+        if (!empty($separator)) {
+            $element = preg_split('/' . $separator . '/', $csvstring);
 
-        foreach ($t as $tk => $tv) {
-            if (isset($field[$tk])) {
-                $ray[$field[$tk]] = $tv;
+            $fieldlist = trim(get_config('local_coursefisher', 'fieldlist'));
+            $fields = array_flip(preg_split("/\n|\s/", $fieldlist, -1, PREG_SPLIT_NO_EMPTY));
+        
+            $row = new \stdClass();
+            foreach ($element as $key => $value) {
+            if (in_array($key, $fields)) {
+                $row->$key = $value;
             }
         }
-        return($ray);
+        return $row;
     }
 
     /**
@@ -72,38 +77,36 @@ class backend extends \local_coursefisher\backend {
 
         $config = get_config('local_coursefisher');
 
-        $parser = $this->get_parser();
-        $c = 0;
-        $lines = array();
         $context = stream_context_create(array('http' => array('timeout' => 1)));
 
         // Opens cache files for writing.
         if (!($fp1 = @fopen($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp', 'w'))) {
-            return(false);
+            return false;
         }
         if (!($fp2 = @fopen($CFG->dataroot.'/temp/local_coursefisher_cache2.tmp', 'w'))) {
-            return(false);
+            return false;
         }
 
+        $firstline = true;
         if ($fd = @fopen ($config->locator, 'r', false, $context)) {
             while (!feof ($fd) && $c < 5000000) {
                 $buffer = fgets($fd, 4096);
-                if (!($config->firstrow && $c == 0)) {
+                if (!($config->firstrow && $firstline)) {
                     $ray = $this->get_record(rtrim($buffer));
-                    $strecords[$c] = $parser->prepare_record($config->parameters, $ray);
-                    $fullrecords[$c] = serialize($ray);
+                    $strecord = $parser->prepare_record($config->parameters, $ray);
+                    $fullrecord = serialize($ray);
 
-                    fwrite($fp1, $strecords[$c]."\r\n");
-                    fwrite($fp2, $fullrecords[$c]."\r\n");
+                    fwrite($fp1, $strecord."\r\n");
+                    fwrite($fp2, $fullrecord."\r\n");
                 }
-                $c++;
+                $firstline = false;
             }
             fclose ($fd);
             fclose ($fp1);
             fclose ($fp2);
-            return($c);
+            return $c;
         }
-        return(false);
+        return false;
     }
 
     /**
@@ -119,16 +122,20 @@ class backend extends \local_coursefisher\backend {
         $parser = $this->get_parser();
         $lines = array();
 
-        if (false === ($strecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp'))) {
+        $strecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp');
+        if ($strecords === false) {
             return false;
         }
 
-        if (false === ($fullrecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache2.tmp'))) {
+        $fullrecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache2.tmp');
+        if ($fullrecords === false) {
             return false;
         }
 
+        $filter = new \local_coursefisher\evaluator();
         foreach ($strecords as $key => $value) {
-            if (eval($parser->substitute_objects($value, $override))) {
+            $filterpass = $filter->evaluate($parser->substitute_objects($value, $override));
+            if ($filterpass === false) {
                 $lines[] = (object)unserialize($fullrecords[$key]);
             }
         }
