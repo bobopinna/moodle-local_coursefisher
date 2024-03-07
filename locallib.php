@@ -498,6 +498,9 @@ function local_coursefisher_enabled_user($context) {
 
     $enabled = false;
     $config = get_config('local_coursefisher');
+    if ($config->display == 'disabled') {
+        return false;
+    }
     $filterconfigured = (isset($config->userfield) && !empty($config->userfield));
     if ($filterconfigured && !has_capability('local/coursefisher:addallcourses', $context)) {
 

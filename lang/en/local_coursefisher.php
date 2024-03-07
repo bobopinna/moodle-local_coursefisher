@@ -102,6 +102,7 @@ $string['filter'] = 'Visibility';
 $string['coursefisherwill'] = 'Course Fisher will be';
 $string['shown'] = 'Shown';
 $string['hidden'] = 'Hidden';
+$string['disabled'] = 'Disabled';
 $string['ifuserprofilefield'] = 'If user profile field';
 $string['nouserfilterset'] = 'No user filter set';
 

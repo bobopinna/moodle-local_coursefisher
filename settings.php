@@ -234,6 +234,7 @@ if ($hassiteconfig) {
     $choices = array();
     $choices['shown'] = new lang_string('shown', 'local_coursefisher');
     $choices['hidden'] = new lang_string('hidden', 'local_coursefisher');
+    $choices['disabled'] = new lang_string('disabled', 'local_coursefisher');
     $page->add(new admin_setting_configselect('local_coursefisher/display',
                 new lang_string('coursefisherwill', 'local_coursefisher'),
                 '',
