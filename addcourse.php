@@ -144,7 +144,7 @@ if (!empty($backendclassname) && class_exists($backendclassname)) {
 
                     $isfirst = isset($groupcourses[$coursehash]->first) && !empty($groupcourses[$coursehash]->first);
                     if ($isfirst && isset($availablecourses[$coursegroup])) {
-                        $availablecourses[$coursegroup] = array_merge([$coursehash => $coursehtmli],
+                        $availablecourses[$coursegroup] = array_merge([$coursehash => $coursehtml],
                                                                       $availablecourses[$coursegroup]);
                     } else {
                         if (!isset($availablecourses[$coursegroup])) {
