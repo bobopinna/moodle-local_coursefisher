@@ -1,5 +1,8 @@
 {
+    "subplugintypes": {
+        "coursefisherbackend": "backend"
+    },
     "plugintypes": {
-        "coursefisherbackend": "local\/coursefisher\/backend"
+        "coursefisherbackend": "local/coursefisher/backend"
     }
 }
