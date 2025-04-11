@@ -62,7 +62,7 @@ class courses_autocreation extends \core\task\scheduled_task {
 
                 if (!empty($allcourses)) {
                     foreach ($allcourses as $coursehash => $hashcourse) {
-                        $metacourseids = array();
+                        $metacourseids = [];
                         $firstcourse = null;
 
                         /* Create course */
@@ -105,9 +105,9 @@ class courses_autocreation extends \core\task\scheduled_task {
 
                         $oldcourse = null;
                         if (!empty($coursedata->idnumber)) {
-                            $oldcourse = $DB->get_record('course', array('idnumber' => $coursedata->idnumber));
+                            $oldcourse = $DB->get_record('course', ['idnumber' => $coursedata->idnumber]);
                         } else {
-                            $oldcourse = $DB->get_record('course', array('shortname' => $coursedata->shortname));
+                            $oldcourse = $DB->get_record('course', ['shortname' => $coursedata->shortname]);
                         }
 
                         if (! $oldcourse) {

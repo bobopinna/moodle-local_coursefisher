@@ -52,7 +52,7 @@ class backend extends \local_coursefisher\backend {
      * @return array The courses data
      */
     public function get_data($alldata=false) {
-        $result = array();
+        $result = [];
 
         if ($this->check_settings()) {
             $parameters = get_config('local_coursefisher', 'parameters');

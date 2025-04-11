@@ -47,7 +47,7 @@ class preferences_form extends moodleform {
         if (!empty($groupcourses)) {
             $coursehashes = array_keys($groupcourses);
 
-            $courseidchoices = array();
+            $courseidchoices = [];
             $existscourse = false;
 
             $singletext = '';
@@ -61,16 +61,16 @@ class preferences_form extends moodleform {
             $groupsonly = get_config('local_coursefisher', 'forceonlygroups');
             if ((count($coursehashes) == 1) || empty($groupsonly)) {
                 $coursecategories = html_writer::tag('span', $groupcourses[$selectedcoursehash]->path,
-                                                      array('class' => 'addcoursecategory'));
+                                                      ['class' => 'addcoursecategory']);
                 $coursename = html_writer::tag('span', $groupcourses[$selectedcoursehash]->fullname,
-                                               array('class' => 'addcoursename'));
-                $singletext .= html_writer::tag ('span', $coursename.$coursecategories, array('class' => 'singlecourse'));
+                                               ['class' => 'addcoursename']);
+                $singletext .= html_writer::tag ('span', $coursename.$coursecategories, ['class' => 'singlecourse']);
                 $courseidchoices[] = &$mform->createElement('radio', 'courseid', null, $addsinglecoursestr.$singletext,
                                                             $selectedcoursehash);
             }
             if (count($coursehashes) > 1) {
                 $grouphash = implode('', $coursehashes);
-                $grouptext .= html_writer::start_tag ('span', array('class' => 'groupcourses'));
+                $grouptext .= html_writer::start_tag ('span', ['class' => 'groupcourses']);
                 $first = true;
                 foreach ($groupcourses as $groupcourse) {
                     $class = 'groupcourse';
@@ -79,20 +79,20 @@ class preferences_form extends moodleform {
                         $class .= ' groupfirstcourse';
                         $first = false;
                     }
-                    $coursecategories = html_writer::tag('span', $groupcourse->path, array('class' => 'addcoursecategory'));
-                    $coursename = html_writer::tag('span', $groupcourse->fullname, array('class' => 'addcoursename'));
+                    $coursecategories = html_writer::tag('span', $groupcourse->path, ['class' => 'addcoursecategory']);
+                    $coursename = html_writer::tag('span', $groupcourse->fullname, ['class' => 'addcoursename']);
                     if (isset($groupcourse->exists) && $groupcourse->exists) {
                         $class .= ' existentcourse';
                         $alertmessage = html_writer::tag('span', get_string('existentcourse', 'local_coursefisher'),
-                                                         array('class' => 'existentcourse'));
+                                                         ['class' => 'existentcourse']);
                         $existscourse = true;
-                        $courseurl = new moodle_url('/course/view.php', array('id' => $groupcourse->id));
+                        $courseurl = new moodle_url('/course/view.php', ['id' => $groupcourse->id]);
                         $courselink = html_writer::tag('a', $groupcourse->fullname,
-                                                       array('href' => $courseurl, 'target' => '_blank'));
-                        $coursename = html_writer::tag('span', $courselink, array('class' => 'addcoursename'));
+                                                       ['href' => $courseurl, 'target' => '_blank']);
+                        $coursename = html_writer::tag('span', $courselink, ['class' => 'addcoursename']);
                     }
                     $grouptext .= html_writer::tag ('span', $coursename.$alertmessage.$coursecategories,
-                                                    array('class' => $class));
+                                                    ['class' => $class]);
                 }
                 $grouptext .= html_writer::end_tag ('span');
                 $courseidchoices[] = &$mform->createElement('radio', 'courseid', null, $addcoursegroupstr.$grouptext,
@@ -100,7 +100,7 @@ class preferences_form extends moodleform {
             }
             if (count($courseidchoices) == 2) {
                 $mform->addGroup($courseidchoices, 'coursegrp', get_string('choosewhatadd', 'local_coursefisher'),
-                                 array(''), false);
+                                 [''], false);
                 $mform->setDefault('courseid', $grouphash);
             } else {
                 if (count($coursehashes) == 1) {
@@ -115,21 +115,21 @@ class preferences_form extends moodleform {
                 $mform->setType('courseid',  PARAM_ALPHANUM);
             }
 
-            $existentchoices = array();
+            $existentchoices = [];
             if ($existscourse) {
-                $existentactions = array('join', 'separated');
+                $existentactions = ['join', 'separated'];
                 foreach ($existentactions as $existentaction) {
                     $existentchoices[] = &$mform->createElement('radio', 'existent', null, get_string($existentaction,
                                                                 'local_coursefisher'), $existentaction);
                 }
                 if (!empty($existentchoices)) {
                     $mform->addGroup($existentchoices, 'exitentgrp', get_string('chooseexistsaction', 'local_coursefisher'),
-                                     array(''), false);
+                                     [''], false);
                     $mform->disabledIf('exitentgrp', 'courseid', 'neq', $grouphash);
                 }
             }
 
-            $actionchoices = array();
+            $actionchoices = [];
             $actions = get_config('local_coursefisher', 'actions');
             if (!empty($actions)) {
                 $permittedactions = explode(',', $actions);
@@ -139,7 +139,7 @@ class preferences_form extends moodleform {
                 }
                 if (!empty($actionchoices)) {
                     $mform->addGroup($actionchoices, 'actiongrp', get_string('choosenextaction', 'local_coursefisher'),
-                                     array(''), false);
+                                     [''], false);
                 }
             }
 
@@ -151,10 +151,10 @@ class preferences_form extends moodleform {
                 $mform->addElement('submit', 'submitbutton', get_string('execute', 'local_coursefisher'));
             } else if (!empty($actionchoices) && (count($actionchoices) == 1)) {
                 redirect(new moodle_url('/local/coursefisher/addcourse.php',
-                                        array('courseid' => $hiddencoursehash, 'action' => $permittedactions[0])));
+                                        ['courseid' => $hiddencoursehash, 'action' => $permittedactions[0]]));
             } else {
                 redirect(new moodle_url('/local/coursefisher/addcourse.php',
-                                        array('courseid' => $hiddencoursehash, 'action' => 'view')));
+                                        ['courseid' => $hiddencoursehash, 'action' => 'view']));
             }
         } else {
             redirect(new moodle_url('/local/coursefisher/addcourse.php'));

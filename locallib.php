@@ -46,10 +46,10 @@ function local_coursefisher_create_categories($categories) {
                 $newcategory->parent = $parentid;
                 $newcategory->name = trim($category->description);
 
-                $searchquery = array('name' => $newcategory->name, 'parent' => $newcategory->parent);
+                $searchquery = ['name' => $newcategory->name, 'parent' => $newcategory->parent];
                 if (!empty($category->code)) {
                     $newcategory->idnumber = $category->code;
-                    $searchquery = array('idnumber' => $newcategory->idnumber);
+                    $searchquery = ['idnumber' => $newcategory->idnumber];
                 }
 
                 if (! $oldcategory = $DB->get_record('course_categories', $searchquery)) {
@@ -81,7 +81,7 @@ function local_coursefisher_create_categories($categories) {
  *
  * @return object or null
  */
-function local_coursefisher_create_course($coursedata, $teacherid = 0, $categories = array(), $linkedcourse = null) {
+function local_coursefisher_create_course($coursedata, $teacherid = 0, $categories = [], $linkedcourse = null) {
     global $DB, $CFG;
 
     $newcourse = new stdClass();
@@ -119,9 +119,9 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
 
     $course = null;
     if (!empty($coursedata->idnumber)) {
-        $oldcourse = $DB->get_record('course', array('idnumber' => $coursedata->idnumber));
+        $oldcourse = $DB->get_record('course', ['idnumber' => $coursedata->idnumber]);
     } else {
-        $oldcourse = $DB->get_record('course', array('shortname' => $coursedata->shortname));
+        $oldcourse = $DB->get_record('course', ['shortname' => $coursedata->shortname]);
     }
     if (!$oldcourse) {
         $newcourse->category = local_coursefisher_create_categories($categories);
@@ -130,7 +130,7 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
 
                 $notifyinfo = new stdClass();
                 $notifyinfo->coursefullname = $coursedata->fullname;
-                $notifyinfo->courseurl = (string) new moodle_url('/course/view.php', array('id' => $course->id));
+                $notifyinfo->courseurl = (string) new moodle_url('/course/view.php', ['id' => $course->id]);
 
                 $notifysubject = get_string('coursenotifysubject', 'local_coursefisher');
                 $notifytext = get_string('coursenotifytext', 'local_coursefisher', $notifyinfo);
@@ -175,8 +175,8 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
                 }
 
                 if (($course->format == 'singleactivity')) {
-                    $query = array('courseid' => $course->id, 'format' => 'singleactivity',
-                                   'sectionid' => 0, 'name' => 'activitytype');
+                    $query = ['courseid' => $course->id, 'format' => 'singleactivity',
+                                   'sectionid' => 0, 'name' => 'activitytype'];
                     if ($DB->get_field('course_format_options', 'value', $query) != 'url') {
                         $DB->set_field('course_format_options', 'value', 'url', $query);
                     }
@@ -186,7 +186,7 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
             } else {
                 // Set default name for section 0.
                 if (isset($coursedata->sectionzero) && !empty($coursedata->sectionzero)) {
-                    $query = array('section' => 0, 'course' => $course->id);
+                    $query = ['section' => 0, 'course' => $course->id];
                     $DB->set_field('course_sections', 'name', $coursedata->sectionzero, $query);
                 }
 
@@ -194,7 +194,7 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
                 if (isset($coursedata->educationalofferurl) && !empty($coursedata->educationalofferurl)) {
                     require_once($CFG->dirroot.'/course/modlib.php');
                     $url = new stdClass();
-                    $url->module = $DB->get_field('modules', 'id', array('name' => 'url', 'visible' => 1));
+                    $url->module = $DB->get_field('modules', 'id', ['name' => 'url', 'visible' => 1]);
                     $url->name = get_string('educationaloffer', 'local_coursefisher');
                     $url->intro = get_string('educationaloffermessage', 'local_coursefisher');
                     $url->externalurl = $coursedata->educationalofferurl;
@@ -212,7 +212,7 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
                 if (isset($coursedata->templateshortname) && !empty($coursedata->templateshortname)) {
                     require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
                     require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-                    $templateid = $DB->get_field('course', 'id', array('shortname' => $coursedata->templateshortname));
+                    $templateid = $DB->get_field('course', 'id', ['shortname' => $coursedata->templateshortname]);
                     if (!empty($templateid)) {
                         $primaryadmin = get_admin();
 
@@ -240,9 +240,9 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
         $course = $oldcourse;
     }
 
-    $editingteacherroleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
+    $editingteacherroleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
 
-    if (!empty($teacherid) && ($teacheruser = $DB->get_record('user', array('id' => $teacherid)))) {
+    if (!empty($teacherid) && ($teacheruser = $DB->get_record('user', ['id' => $teacherid]))) {
         // Set student role at course context.
         $coursecontext = context_course::instance($course->id);
 
@@ -272,12 +272,12 @@ function local_coursefisher_create_course($coursedata, $teacherid = 0, $categori
  */
 function local_coursefisher_validate_sortcoursesby($sortorder) {
     if (!empty($sortorder)) {
-        $sortorders = array(
+        $sortorders = [
             'fullname', 'fullnamedesc',
             'shortname', 'shortnamedesc',
             'idnumber', 'idnumberdesc',
-            'timecreated', 'timecreateddesc'
-        );
+            'timecreated', 'timecreateddesc',
+        ];
         if (in_array($sortorder, $sortorders)) {
             return true;
         }
@@ -310,7 +310,7 @@ function local_coursefisher_add_linkedcourse_url($course, $linkedcourse) {
     $urlresource->intro = get_string('courselinkmessage', 'local_coursefisher', $linkedcourse->fullname);
 
     $urlresource->display = 0;
-    $displayoptions = array();
+    $displayoptions = [];
     $displayoptions['printintro'] = 1;
     $urlresource->displayoptions = serialize($displayoptions);
     $urlresource->parameters = '';
@@ -321,7 +321,7 @@ function local_coursefisher_add_linkedcourse_url($course, $linkedcourse) {
     $urlresource->visible = $cw->visible;
     $urlresource->instance = 0;
 
-    $urlresource->module = $DB->get_field('modules', 'id', array('name' => 'url', 'visible' => 1));
+    $urlresource->module = $DB->get_field('modules', 'id', ['name' => 'url', 'visible' => 1]);
     $urlresource->modulename = 'url';
 
     add_moduleinfo($urlresource, $course);
@@ -335,7 +335,7 @@ function local_coursefisher_add_linkedcourse_url($course, $linkedcourse) {
  *
  * @return void
  */
-function local_coursefisher_add_metacourses($course, $metacourseids = array()) {
+function local_coursefisher_add_metacourses($course, $metacourseids = []) {
     if (enrol_is_enabled('meta')) {
         $context = context_course::instance($course->id, MUST_EXIST);
         if (!empty($metacourseids) && has_capability('moodle/course:enrolconfig', $context)) {
@@ -343,7 +343,7 @@ function local_coursefisher_add_metacourses($course, $metacourseids = array()) {
             $context = context_course::instance($course->id, MUST_EXIST);
             if (has_capability('enrol/meta:config', $context)) {
                 foreach ($metacourseids as $metacourseid) {
-                    $eid = $enrol->add_instance($course, array('customint1' => $metacourseid));
+                    $eid = $enrol->add_instance($course, ['customint1' => $metacourseid]);
                 }
             }
         }
@@ -358,7 +358,7 @@ function local_coursefisher_add_metacourses($course, $metacourseids = array()) {
  * @return array Course hashes
  */
 function local_coursefisher_get_coursehashes($courses) {
-    $hashedcourses = array();
+    $hashedcourses = [];
     if (!empty($courses)) {
         foreach ($courses as $i => $course) {
             $coursehash = md5(serialize($course));
@@ -382,7 +382,7 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
 
     $config = get_config('local_coursefisher');
 
-    $groupcourses = array();
+    $groupcourses = [];
 
     $selectedcourse = $courses[$selectedcoursehash];
 
@@ -423,9 +423,9 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
                     $firstcoursedata->exists = false;
                     $firstcoursedata->first = true;
                     if (!empty($firstcoursedata->idnumber)) {
-                        $oldcourse = $DB->get_record('course', array('idnumber' => $firstcoursedata->idnumber));
+                        $oldcourse = $DB->get_record('course', ['idnumber' => $firstcoursedata->idnumber]);
                     } else {
-                        $oldcourse = $DB->get_record('course', array('shortname' => $firstcoursedata->shortname));
+                        $oldcourse = $DB->get_record('course', ['shortname' => $firstcoursedata->shortname]);
                     }
                     if ($oldcourse) {
                         $firstcoursedata->exists = true;
@@ -465,9 +465,9 @@ function local_coursefisher_get_groupcourses($courses, $selectedcoursehash, $cou
                     $othercoursedata->hash = $coursehash;
                     $othercoursedata->exists = false;
                     if (!empty($othercoursedata->idnumber)) {
-                        $oldcourse = $DB->get_record('course', array('idnumber' => $othercoursedata->idnumber));
+                        $oldcourse = $DB->get_record('course', ['idnumber' => $othercoursedata->idnumber]);
                     } else {
-                        $oldcourse = $DB->get_record('course', array('shortname' => $othercoursedata->shortname));
+                        $oldcourse = $DB->get_record('course', ['shortname' => $othercoursedata->shortname]);
                     }
                     if ($oldcourse) {
                         $othercoursedata->exists = true;

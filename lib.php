@@ -59,9 +59,9 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
                 if ($instance->enrol === 'meta') {
                     $metacoursecontext = context_course::instance($instance->customint1);
                     if (is_enrolled($metacoursecontext)) {
-                        $metacourse = $DB->get_record('course', array('id' => $instance->customint1));
+                        $metacourse = $DB->get_record('course', ['id' => $instance->customint1]);
                         $activitytype = $DB->get_field('course_format_options', 'value',
-                                                       array('courseid' => $instance->customint1, 'name' => 'activitytype'));
+                                                       ['courseid' => $instance->customint1, 'name' => 'activitytype']);
                         if (($metacourse->format == 'singleactivity') && ($activitytype == 'url')) {
                             if ($metacourseinstances = enrol_get_instances($metacoursecontext->instanceid, true)) {
                                 foreach ($metacourseinstances as $metacourseinstance) {
@@ -70,7 +70,7 @@ function local_coursefisher_extend_settings_navigation(settings_navigation $nav,
                                     $enrol = new $enrolclassname();
                                     $unenrolink = $enrol->get_unenrolself_link($metacourseinstance);
                                     if ($unenrolink != null) {
-                                        $query = array('enrolid' => $metacourseinstance->id, 'userid' => $USER->id);
+                                        $query = ['enrolid' => $metacourseinstance->id, 'userid' => $USER->id];
                                         if ($userenrolment = $DB->get_record('user_enrolments', $query)) {
                                             $enrolledbefore = $userenrolment->timestart < time();
                                             $stillenrolled = ($userenrolment->timeend == 0) || ($userenrolment->timeend < time());
@@ -115,7 +115,7 @@ function local_coursefisher_navigation($nav, $context) {
             $coursefishernav->make_active();
         }
 
-        $url = new moodle_url('/local/coursefisher/addcourse.php', array());
+        $url = new moodle_url('/local/coursefisher/addcourse.php', []);
         $coursefishertitle = get_config('local_coursefisher', 'title');
         if (empty($coursefishertitle)) {
             $coursefishertitle = get_string('pluginname', 'local_coursefisher');
@@ -128,7 +128,7 @@ function local_coursefisher_navigation($nav, $context) {
         $helplink = get_config('local_coursefisher', 'course_helplink');
         if (!empty($helplink)) {
             $helpstr = get_string('help', 'local_coursefisher');
-            $url = new moodle_url($helplink, array());
+            $url = new moodle_url($helplink, []);
             $nodetype = navigation_node::NODETYPE_LEAF;
             $icon = new pix_icon('help', '');
             $coursefishernav->add($helpstr, $url, $nodetype, $helpstr, 'helpcoursefisher', $icon);
@@ -143,7 +143,7 @@ function local_coursefisher_navigation($nav, $context) {
  * @return array
  */
 function local_coursefisher_links($context) {
-    $coursefisherlinks = array();
+    $coursefisherlinks = [];
 
     if (local_coursefisher_enabled_user($context)) {
         $coursefishertitle = get_config('local_coursefisher', 'title');
@@ -151,10 +151,10 @@ function local_coursefisher_links($context) {
             $coursefishertitle = get_string('pluginname', 'local_coursefisher');
         }
         $coursefisherlinks['coursefishertitle'] = $coursefishertitle;
-        $coursefisherlinks['addcourseurl'] = new moodle_url('/local/coursefisher/addcourse.php', array());
+        $coursefisherlinks['addcourseurl'] = new moodle_url('/local/coursefisher/addcourse.php', []);
         $helplink = get_config('local_coursefisher', 'course_helplink');
         if (!empty($helplink)) {
-            $coursefisherlinks['helpurl'] = new moodle_url($helplink, array());
+            $coursefisherlinks['helpurl'] = new moodle_url($helplink, []);
         }
     }
     return $coursefisherlinks;

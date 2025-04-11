@@ -23,8 +23,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$tasks = array(
-    array(
+$tasks = [
+    [
         'classname' => '\local_coursefisher\task\courses_autocreation',
         'blocking' => 0,
         'minute' => 'R',
@@ -32,7 +32,7 @@ $tasks = array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*',
-        'disabled' => 1
-    )
-);
+        'disabled' => 1,
+    ],
+];
 

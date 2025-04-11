@@ -57,11 +57,12 @@ class backend extends \local_coursefisher\backend {
 
             $fieldlist = trim(get_config('local_coursefisher', 'fieldlist'));
             $fields = array_flip(preg_split("/\n|\s/", $fieldlist, -1, PREG_SPLIT_NO_EMPTY));
-        
+
             $row = new \stdClass();
             foreach ($element as $key => $value) {
-            if (in_array($key, $fields)) {
-                $row->$key = $value;
+                if (in_array($key, $fields)) {
+                    $row->$key = $value;
+                }
             }
         }
         return $row;
@@ -77,7 +78,7 @@ class backend extends \local_coursefisher\backend {
 
         $config = get_config('local_coursefisher');
 
-        $context = stream_context_create(array('http' => array('timeout' => 1)));
+        $context = stream_context_create(['http' => ['timeout' => 1]]);
 
         // Opens cache files for writing.
         if (!($fp1 = @fopen($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp', 'w'))) {
@@ -120,7 +121,7 @@ class backend extends \local_coursefisher\backend {
         global $CFG;
 
         $parser = $this->get_parser();
-        $lines = array();
+        $lines = [];
 
         $strecords = @file($CFG->dataroot.'/temp/local_coursefisher_cache1.tmp');
         if ($strecords === false) {
@@ -157,8 +158,8 @@ class backend extends \local_coursefisher\backend {
 
         $parser = $this->get_parser();
         $c = 0;
-        $lines = array();
-        $context = stream_context_create(array('http' => array('timeout' => 1)));
+        $lines = [];
+        $context = stream_context_create(['http' => ['timeout' => 1]]);
 
         $override = false;
         if ($usetestvalue) {
@@ -196,13 +197,13 @@ class backend extends \local_coursefisher\backend {
             $parser = $this->get_parser();
             $override = $parser->parse_field_assign($CFG->local_coursefisher_fieldtest);
 
-            $fields = array("local_coursefisher_fieldlevel",
+            $fields = ["local_coursefisher_fieldlevel",
                        "local_coursefisher_course_code",
                        "local_coursefisher_course_fullname",
                        "local_coursefisher_course_shortname",
                        "local_coursefisher_locator",
                        "local_coursefisher_parameters",
-                       "local_coursefisher_fieldtest");
+                       "local_coursefisher_fieldtest"];
 
             if (!(false === ($this->check_config("local_coursefisher_fieldlist", $fields, $override)))) {
                 $cachename = 'MoodleBlockCourseFisherCSV'.$_COOKIE['MoodleSession'.$CFG->sessioncookie];
@@ -211,13 +212,13 @@ class backend extends \local_coursefisher\backend {
                     if (is_array($cachedata)) {
                         return($cachedata);
                     }
-                    return(array());
+                    return([]);
                 } else {
                     $cachedata = $this->fetch_from_cache();
                     $_SESSION[$cachename] = serialize($cachedata);
                     return($cachedata);
                 }
-                return(array());
+                return([]);
             } // CheckCFG.
 
         } // Init.
@@ -239,12 +240,12 @@ class backend extends \local_coursefisher\backend {
             $parser = $this->get_parser();
             $override = $parser->parse_field_assign($CFG->local_coursefisher_fieldtest);
 
-            $fields = array("local_coursefisher_fieldlevel",
-                         "local_coursefisher_course_fullname",
-                         "local_coursefisher_course_shortname",
-                         "local_coursefisher_locator",
-                         "local_coursefisher_parameters",
-                         "local_coursefisher_fieldtest");
+            $fields = ["local_coursefisher_fieldlevel",
+                       "local_coursefisher_course_fullname",
+                       "local_coursefisher_course_shortname",
+                       "local_coursefisher_locator",
+                       "local_coursefisher_parameters",
+                       "local_coursefisher_fieldtest"];
             if (!(false === ($this->check_config("local_coursefisher_fieldlist", $fields, $override)))) {
                 $this->fetch_to_cache();
             } else {

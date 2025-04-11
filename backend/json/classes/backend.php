@@ -65,7 +65,7 @@ class backend extends \local_coursefisher\backend {
         $check = $this->check_settings();
         if ($check) {
             // Download the first available json file.
-            $result = array();
+            $result = [];
             $locators = preg_split("/((\r?\n)|(\r\n?))/", $config->locator);
             if (!empty($locators)) {
                 $override = null;

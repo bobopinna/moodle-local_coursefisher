@@ -45,18 +45,18 @@ class evaluator extends \EvalMath {
     /**
      * @var array Built-in functions.
      */
-    public $fb = array(
+    public $fb = [
         'sin', 'sinh', 'asin', 'asinh', 'cos', 'cosh', 'acos', 'acosh', 'tan', 'tanh', 'atan', 'atanh',
         'sqrt', 'abs', 'log', 'log10', 'exp', 'floor', 'ceil', 'is_finite', 'is_infinite', 'is_nan',
         'is_bool', 'is_float', 'is_int', 'is_numeric', 'is_string', 'addslashes', 'stripslashes', 'quotemeta',
         'chr', 'ord', 'lvfirst', 'ucfirst', 'strtolower', 'strtoupper', 'ucfirst', 'strlen', 'strrev',
         'str_shuffle', 'crc32', 'str_rot13', 'utf8_encode', 'utf8_decode', 'intval', 'floatval',
-        'bin2hex', 'bindec', 'decbin', 'dechex', 'decoct', 'deg2rad', 'hex2bin', 'hexdec', 'octdec', 'rad2deg');
+        'bin2hex', 'bindec', 'decbin', 'dechex', 'decoct', 'deg2rad', 'hex2bin', 'hexdec', 'octdec', 'rad2deg'];
 
     /**
      * @var array Built-in constants.
      */
-    public $v = array('true' => 1, 'false' => 0);
+    public $v = ['true' => 1, 'false' => 0];
 
     /**
      * Evaluate an expression.
@@ -89,14 +89,14 @@ class evaluator extends \EvalMath {
         $index = 0;
         $stack = new \EvalMathStack;
         // Postfix form of expression, to be passed to pfx().
-        $output = array();
+        $output = [];
         $expr = trim($expr);
         // MDL-14274: new operators for comparison added.
-        $ops   = array('+', '-', '*', '/', '^', '_', '!', '>', '<', '<=', '>=', '==', '!=', '&&', '||');
+        $ops   = ['+', '-', '*', '/', '^', '_', '!', '>', '<', '<=', '>=', '==', '!=', '&&', '||'];
         // Right-associative operator?.
-        $opsr = array('+' => 0, '-' => 0, '*' => 0, '/' => 0, '^' => 1);
+        $opsr = ['+' => 0, '-' => 0, '*' => 0, '/' => 0, '^' => 1];
         // Operator precedence.
-        $opsp = array(
+        $opsp = [
                 '_' => 14,
                 '!' => 14,
                 '^' => 13,
@@ -111,8 +111,8 @@ class evaluator extends \EvalMath {
                 '==' => 8,
                 '!=' => 8,
                 '&&' => 4,
-                '||' => 3
-            );
+                '||' => 3,
+        ];
 
         // We use this in syntax-checking the expression and determining when a - is a negation.
         $expectingop = false;
@@ -189,7 +189,7 @@ class evaluator extends \EvalMath {
                     $argcount = $stack->pop();
                     $fn = $stack->pop();
                     // Send function to output.
-                    $output[] = array('fn' => $fn, 'fnn' => $fnn, 'argcount' => $argcount);
+                    $output[] = ['fn' => $fn, 'fnn' => $fnn, 'argcount' => $argcount];
                     // Check the argument count.
                     if (in_array($fnn, $this->fb)) {
                         if ($argcount > 1) {
@@ -314,7 +314,7 @@ class evaluator extends \EvalMath {
                         return $this->trigger(get_string('wrongnumberofarguments', 'mathslib', $a));
                     }
                     // Send function to output.
-                    $output[] = array('fn' => $fn, 'fnn' => $fnn, 'argcount' => 0);
+                    $output[] = ['fn' => $fn, 'fnn' => $fnn, 'argcount' => 0];
                     $index++;
                     $expectingop = true;
                 } else {
@@ -362,7 +362,7 @@ class evaluator extends \EvalMath {
      *
      * @return mixed or false
      */
-    public function pfx($tokens, $vars = array()) {
+    public function pfx($tokens, $vars = []) {
 
         if ($tokens == false) {
             return false;
@@ -392,13 +392,13 @@ class evaluator extends \EvalMath {
                     // Resolve synonyms.
                     $fnn = $this->get_native_function_name($fnn);
                     // Get args.
-                    $args = array();
+                    $args = [];
                     for ($i = $count - 1; $i >= 0; $i--) {
                         if (is_null($args[] = $stack->pop())) {
                             return $this->trigger(get_string('internalerror', 'mathslib'));
                         }
                     }
-                    $res = call_user_func_array(array('EvalMathFuncs', $fnn), array_reverse($args));
+                    $res = call_user_func_array(['EvalMathFuncs', $fnn], array_reverse($args));
                     if ($res === false) {
                         return $this->trigger(get_string('internalerror', 'mathslib'));
                     }
@@ -407,7 +407,7 @@ class evaluator extends \EvalMath {
                     // User function.
 
                     // Get args.
-                    $args = array();
+                    $args = [];
                     for ($i = count($this->f[$fnn]['args']) - 1; $i >= 0; $i--) {
                         if (is_null($args[$this->f[$fnn]['args'][$i]] = $stack->pop())) {
                             return $this->trigger(get_string('internalerror', 'mathslib'));
@@ -416,7 +416,7 @@ class evaluator extends \EvalMath {
                     // Yay ... it's recursion!!!!
                     $stack->push($this->pfx($this->f[$fnn]['func'], $args));
                 }
-            } else if (in_array($token, array('+', '-', '*', '/', '^', '>', '<', '==', '<=', '>=', '!=', '&&', '||'), true)) {
+            } else if (in_array($token, ['+', '-', '*', '/', '^', '>', '<', '==', '<=', '>=', '!=', '&&', '||'], true)) {
                 // If the token is a binary operator, pop two values off the stack, do the operation, and push the result back on.
                 if (is_null($op2 = $stack->pop())) {
                     return $this->trigger(get_string('internalerror', 'mathslib'));

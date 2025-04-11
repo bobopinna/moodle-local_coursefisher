@@ -99,7 +99,7 @@ abstract class backend {
      */
     public function check_settings() {
         $result = true;
-        $fields = array();
+        $fields = [];
 
         $settings = get_config('local_coursefisher');
 
@@ -141,8 +141,8 @@ abstract class backend {
         preg_match_all(ASSIGNFIELDMATCHSTRING, $assignstring, $matches);
         if (isset($matches[1]) && isset($matches[2])) {
             $fields = new \stdClass();;
-            $fields->names = array();
-            $fields->values = array();
+            $fields->names = [];
+            $fields->values = [];
             foreach ($matches[1] as $id => $fieldname) {
                 $fields->names[] = '/' . quotemeta($fieldname) . '/';
                 $fields->values[] = $matches[2][$id];
@@ -250,10 +250,10 @@ abstract class backend {
      *
      * @return array The array of items
      */
-    public static function get_fields_items($field, $items = array('code' => 2, 'description' => 3)) {
-        $result = array();
+    public static function get_fields_items($field, $items = ['code' => 2, 'description' => 3]) {
+        $result = [];
         if (!is_array($field)) {
-            $fields = array($field);
+            $fields = [$field];
         } else {
             $fields = $field;
         }
@@ -295,7 +295,7 @@ abstract class backend {
      * @return array The array of items
      */
     public static function get_fields_description($field) {
-        return self::get_fields_items($field, array('description' => 3));
+        return self::get_fields_items($field, ['description' => 3]);
     }
 
 }

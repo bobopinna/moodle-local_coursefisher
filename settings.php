@@ -45,7 +45,7 @@ if ($hassiteconfig) {
 
     $page = new admin_settingpage('local_coursefisher_backend', new lang_string('backendsettings', 'local_coursefisher'));
 
-    $choices = array();
+    $choices = [];
     foreach (core_plugin_manager::instance()->get_plugins_of_type('coursefisherbackend') as $backend) {
         $choices[$backend->name] = $backend->displayname;
     }
@@ -88,7 +88,7 @@ if ($hassiteconfig) {
                 ''));
 
     $backendtestlink = html_writer::tag('a', new lang_string('configurationtest', 'local_coursefisher'),
-                array('href' => new moodle_url('/local/coursefisher/backend/test.php')));
+                ['href' => new moodle_url('/local/coursefisher/backend/test.php')]);
 
     $page->add(new admin_setting_heading('local_coursefisher/backendtestlink', '', $backendtestlink));
 
@@ -116,17 +116,17 @@ if ($hassiteconfig) {
                 '',
                 ''));
 
-    $choices = array();
+    $choices = [];
     $choices['view'] = new lang_string('view', 'local_coursefisher');
     $choices['edit'] = new lang_string('edit', 'local_coursefisher');
     $choices['import'] = new lang_string('import', 'local_coursefisher');
-    $defaultchoices = array('view', 'edit', 'import');
+    $defaultchoices = ['view', 'edit', 'import'];
     $page->add(new admin_setting_configmultiselect('local_coursefisher/actions',
                 new lang_string('actions', 'local_coursefisher'),
                 new lang_string('configactions', 'local_coursefisher'),
                  $defaultchoices, $choices));
 
-    $choices = array(
+    $choices = [
         'none' => get_string('dontsortcourses'),
         'fullname' => get_string('sortbyx', 'moodle', get_string('fullnamecourse')),
         'fullnamedesc' => get_string('sortbyxreverse', 'moodle', get_string('fullnamecourse')),
@@ -135,8 +135,8 @@ if ($hassiteconfig) {
         'idnumber' => get_string('sortbyx', 'moodle', get_string('idnumbercourse')),
         'idnumberdesc' => get_string('sortbyxreverse', 'moodle', get_string('idnumbercourse')),
         'timecreated' => get_string('sortbyx', 'moodle', get_string('timecreatedcourse')),
-        'timecreateddesc' => get_string('sortbyxreverse', 'moodle', get_string('timecreatedcourse'))
-    );
+        'timecreateddesc' => get_string('sortbyxreverse', 'moodle', get_string('timecreatedcourse')),
+    ];
     $page->add(new admin_setting_configselect('local_coursefisher/sortcoursesby',
                 new lang_string('sortcoursesby', 'local_coursefisher'),
                 new lang_string('configsortcoursesby', 'local_coursefisher'),
@@ -177,7 +177,7 @@ if ($hassiteconfig) {
 
     $page = new admin_settingpage('local_coursefisher_coursesgroup', new lang_string('coursesgroupsettings', 'local_coursefisher'));
 
-    $choices = array();
+    $choices = [];
     $default = '';
     if (enrol_is_enabled('guest')) {
         $choices['guest'] = new lang_string('guest', 'local_coursefisher');
@@ -220,7 +220,7 @@ if ($hassiteconfig) {
     $page->add(new admin_setting_users_with_capability('local_coursefisher/notifycoursecreation',
                 new lang_string('notifycoursecreation', 'local_coursefisher'),
                 new lang_string('confignotifycoursecreation', 'local_coursefisher'),
-                array(), 'local/coursefisher:addallcourses'));
+                [], 'local/coursefisher:addallcourses'));
 
     $page->add(new admin_setting_configtextarea('local_coursefisher/email_condition',
                 new lang_string('emailcondition', 'local_coursefisher'),
@@ -231,7 +231,7 @@ if ($hassiteconfig) {
 
     $page = new admin_settingpage('local_coursefisher_visibility', new lang_string('filter', 'local_coursefisher'));
 
-    $choices = array();
+    $choices = [];
     $choices['shown'] = new lang_string('shown', 'local_coursefisher');
     $choices['hidden'] = new lang_string('hidden', 'local_coursefisher');
     $choices['disabled'] = new lang_string('disabled', 'local_coursefisher');
@@ -240,8 +240,8 @@ if ($hassiteconfig) {
                 '',
                 'shown', $choices));
 
-    $fieldnames = array('lastname', 'firstname', 'username', 'email', 'city', 'idnumber', 'institution', 'department', 'address');
-    $fields = array('' => new lang_string('choose'));
+    $fieldnames = ['lastname', 'firstname', 'username', 'email', 'city', 'idnumber', 'institution', 'department', 'address'];
+    $fields = ['' => new lang_string('choose')];
     foreach ($fieldnames as $fieldname) {
         $fields[$fieldname] = new lang_string($fieldname);
     }
@@ -249,7 +249,7 @@ if ($hassiteconfig) {
     $customfields = $DB->get_records('user_info_field');
     if (!empty($customfields)) {
         foreach ($customfields as $customfield) {
-            if (in_array($customfield->datatype, array('text', 'menu', 'checkbox'))) {
+            if (in_array($customfield->datatype, ['text', 'menu', 'checkbox'])) {
                 $fields[$customfield->shortname] = $customfield->name;
             }
         }
@@ -260,12 +260,13 @@ if ($hassiteconfig) {
                 '',
                 '', $fields));
 
-    $operators = array('contains' => new lang_string('contains', 'filters'),
-                       'doesnotcontain' => new lang_string('doesnotcontain', 'filters'),
-                       'isequalto' => new lang_string('isequalto', 'filters'),
-                       'isnotequalto' => new lang_string('isnotequalto', 'filters'),
-                       'startswith' => new lang_string('startswith', 'filters'),
-                       'endswith' => new lang_string('endswith', 'filters'));
+    $operators = ['contains' => new lang_string('contains', 'filters'),
+                  'doesnotcontain' => new lang_string('doesnotcontain', 'filters'),
+                  'isequalto' => new lang_string('isequalto', 'filters'),
+                  'isnotequalto' => new lang_string('isnotequalto', 'filters'),
+                  'startswith' => new lang_string('startswith', 'filters'),
+                  'endswith' => new lang_string('endswith', 'filters'),
+                 ];
 
     $page->add(new admin_setting_configselect('local_coursefisher/operator',
                 '',
