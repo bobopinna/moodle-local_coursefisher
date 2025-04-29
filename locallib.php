@@ -504,7 +504,7 @@ function local_coursefisher_enabled_user($context) {
     $filterconfigured = (isset($config->userfield) && !empty($config->userfield));
     if ($filterconfigured && !has_capability('local/coursefisher:addallcourses', $context)) {
 
-        if (isset($config->matchvalue) && !empty($config->matchvalue)) {
+        if (isset($config->matchvalue) && ($config->matchvalue != '')) {
 
             $userfieldvalue = '';
             $customfields = $DB->get_records('user_info_field');
