@@ -194,16 +194,19 @@ abstract class backend {
      * @return string The replaced string
      */
     public static function format_fields($formatstring, $data = null) {
+        $userfieldvaluecall = function($matches) use ($data) {
+            return self::user_field_value($matches, $data);
+        };
 
-        $formattedstring = preg_replace_callback(USERFIELDMATCHSTRING, 'self::user_field_value', $formatstring);
+        $formattedstring = preg_replace_callback(USERFIELDMATCHSTRING, $userfieldvaluecall, $formatstring);
         if (!empty($data)) {
             $tempstring = $formattedstring;
 
-            $callback = function($matches) use ($data) {
+            $getfieldcall = function($matches) use ($data) {
                  return self::get_field($matches, $data);
             };
 
-            $formattedstring = preg_replace_callback(BACKENDFIELDMATCHSTRING, $callback, $tempstring);
+            $formattedstring = preg_replace_callback(BACKENDFIELDMATCHSTRING, $getfieldcall, $tempstring);
         }
 
         return $formattedstring;
