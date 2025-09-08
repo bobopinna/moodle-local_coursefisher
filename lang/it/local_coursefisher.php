@@ -55,10 +55,10 @@ $string['configfieldlevel'] = 'Un livello per riga. Il primo livello di categori
 $string['configfieldlist'] = 'La lista dei campi ricevuti, uno per riga nell\'ordine in cui vengono ricevuti';
 $string['configfieldtest'] = 'Valori per i test del backend, uno per riga nel formato [%campo%]:valore';
 $string['configfirstrow'] = 'se contiene la lista dei campi CSV';
-$string['configforceonlygroups'] = 'Se abilitata i docenti possono creare solo i corsi singoli e i gruppi di corsi. Se un corso èparte di un gruppo non pu&ograve; essere creato come cors a se stante.';
+$string['configforceonlygroups'] = 'Se abilitata i docenti possono creare solo i corsi singoli e i gruppi di corsi. Se un corso è parte di un gruppo non pu&ograve; essere creato come corso a se stante.';
 $string['configgrouprule'] = 'Questo definisce la regola di confronto per riuniore il corso padre con i figli. Esempio: [%codice_padre%]=[%anno%]-[%codice_cdl%]-[%codice_insegnamento%]';
-$string['configlinkedcoursecategory'] = 'Definisci questo per creare un\'unica categoria che contenga tutti i corsi di figlio, in assegna i corsi figlio verranno creati nelle categorie definite dal backend. Esempio: "Corsi figlio [%dipartimento#10%] - [%anno%]/[%anno+1%]"';
-$string['configlinktype'] = 'I collegamenti ai corsi figlio devono essere creati con il metodo selezionato';
+$string['configlinkedcoursecategory'] = 'Definisci questo per creare un\'unica categoria che contenga tutti i corsi di figlio, in assenza i corsi figlio verranno creati nelle categorie definite dal backend. Esempio: "Corsi figlio [%dipartimento#10%] - [%anno%]/[%anno+1%]"';
+$string['configlinktype'] = 'I collegamenti ai corsi figlio verranno creati con il metodo selezionato';
 $string['configlocator'] = 'Es. file://path or mysql:username:password@host:port/database/table usare più righe per usare più sorgenti in ordine';
 $string['confignotifycoursecreation'] = 'Invia la notifica di creazione corso agli utenti selezionati.';
 $string['configparameters'] = 'Es. query o filtri get. Usare [%campo%] per sostituire i campi utente, p.es. [%uidnumber%]';

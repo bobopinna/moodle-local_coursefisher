@@ -22,30 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 $string['actions'] = 'Actions';
 $string['addcourse'] = 'Add course';
 $string['addcoursegroup'] = 'Add course group';
@@ -81,8 +57,8 @@ $string['configfieldtest'] = 'Backend configuration test values, one for row. Sy
 $string['configfirstrow'] = 'Useful in file backends, es. list of CSV fields';
 $string['configforceonlygroups'] = 'If enabled teachers could create only single courses and defined groups of courses. If a course is member of a group could not be created as standalone course.';
 $string['configgrouprule'] = 'This define a comparison rule to match father with child courses. Example: [%father_code%]=[%year%]-[%degree_cod%]-[%course_cod%]';
-$string['configlinkedcoursecategory'] = 'Set this to create all child courses in a course category. Example: "Child Courses [%department#10%] - [%year%]/[%year+1%]"';
-$string['configlinktype'] = 'Child courses link must be done using the selected method';
+$string['configlinkedcoursecategory'] = 'Set this to create all child courses in a specific course category, leave blank to let place child courses as defined in backend data. Example: "Child Courses [%department#10%] - [%year%]/[%year+1%]"';
+$string['configlinktype'] = 'Child course links will be connected using the selected method';
 $string['configlocator'] = 'Something like file://path or mysql://username:password@host:port/database/table use multiple rows if want to use multiple sources in a first match order';
 $string['confignotifycoursecreation'] = 'Send course creation notification messages to these selected users.';
 $string['configparameters'] = 'A query or filter get. You can use [%field%] to replace a moodle user field, es. [%uidnumber%]';
