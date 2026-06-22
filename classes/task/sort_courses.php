@@ -34,7 +34,7 @@ class sort_courses extends adhoc_task {
         $categoryid = $info->categoryid;
         $sortcoursesby = $info->sortcoursesby;
 
-        $category = \core_course_category::get($categoryid);
+        $category = \core_course_category::get($categoryid, IGNORE_MISSING);
         if (!empty($category)) {
             \core_course\management\helper::action_category_resort_courses($category, $sortcoursesby);
         }
